@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxWidth="900" maxHeight="620" minWidth="900" minHeight="620"
+            prefWidth="900" prefHeight="620"
+            stylesheets="@../styles/Styles.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.damianqm.tarea3adt.controller.GestionEspectaculoController">
+  <top>
+    <VBox styleClass="background" spacing="3">
+      <padding><Insets top="12" left="22" bottom="10" right="22"/></padding>
+      <Label text="Gestion de Espectaculos" textFill="WHITE"><font><Font size="16"/></font></Label>
+      <Label text="Crea, modifica o elimina espectaculos. Los numeros se gestionan en su propia pantalla."
+             textFill="#aaaaaa" style="-fx-font-size:11;" wrapText="true"/>
+    </VBox>
+  </top>
+  <center>
+    <SplitPane dividerPositions="0.32">
+
+      <!-- Izquierda: selector de espectáculo + acciones -->
+      <VBox spacing="8" style="-fx-padding:12; -fx-background-color:#f5f5f5;">
+        <Label text="Espectaculos:" style="-fx-font-weight:bold;"/>
+        <ComboBox fx:id="cbEspectaculo" maxWidth="Infinity" prefHeight="32"
+                  promptText="-- Selecciona para editar/eliminar --"/>
+        <Button text="Nuevo espectaculo" onAction="#nuevoEspectaculo"
+                maxWidth="Infinity" prefHeight="30"/>
+        <Button text="Eliminar seleccionado" onAction="#eliminarEspectaculo"
+                maxWidth="Infinity" prefHeight="30"
+                style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-font-weight:bold;"/>
+        <Separator/>
+        <Button text="Ir a Gestionar Numeros" onAction="#irGestionNumeros"
+                maxWidth="Infinity" prefHeight="30"
+                style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-font-weight:bold;"/>
+        <Label fx:id="lblMensaje" text="" wrapText="true" maxWidth="Infinity"
+               style="-fx-font-size:12; -fx-padding:4 0 0 0;"/>
+      </VBox>
+
+      <!-- Derecha: wizard -->
+      <VBox spacing="0">
+
+        <!-- PASO 1 -->
+        <VBox fx:id="panelPaso1" spacing="10" style="-fx-padding:16;">
+          <Label text="PASO 1 — Datos del espectaculo"
+                 style="-fx-font-size:14; -fx-font-weight:bold; -fx-text-fill:#1a1a2e;"/>
+          <Separator/>
+          <GridPane hgap="14" vgap="8" maxWidth="Infinity">
+            <columnConstraints>
+              <ColumnConstraints percentWidth="50"/>
+              <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+            <Label text="Nombre (max. 25 chars):" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Label text="Coordinador:"            GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <TextField fx:id="txtNombreEsp" promptText="Nombre del espectaculo"
+                       prefHeight="32" maxWidth="Infinity"
+                       GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <ComboBox fx:id="cbCoordinador" prefHeight="32" maxWidth="Infinity"
+                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <Label text="Fecha inicio:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <Label text="Fecha fin (max. 1 año):" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            <DatePicker fx:id="dpInicio" maxWidth="Infinity"
+                        GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+            <DatePicker fx:id="dpFin"    maxWidth="Infinity"
+                        GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+          </GridPane>
+          <Separator/>
+          <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button text="Siguiente" onAction="#siguiente"
+                    prefWidth="130" prefHeight="34" styleClass="btnGreen" style="-fx-font-size:13;"/>
+            <Label text="El espectaculo no se guarda hasta completar los numeros."
+                   style="-fx-font-size:11; -fx-text-fill:#888;" wrapText="true" maxWidth="240"/>
+          </HBox>
+        </VBox>
+
+        <!-- PASO 2 -->
+        <VBox fx:id="panelPaso2" spacing="8" style="-fx-padding:14;"
+              visible="false" managed="false">
+          <Label fx:id="lblEspActual" text=""
+                 style="-fx-font-size:13; -fx-font-weight:bold; -fx-text-fill:#1a1a2e;"/>
+          <Label fx:id="lblContador" text=""
+                 style="-fx-font-weight:bold; -fx-text-fill:#e67e22;"/>
+          <Separator/>
+
+          <!-- Selector de número a añadir -->
+          <Label text="Anadir numero al espectaculo:" style="-fx-font-weight:bold;"/>
+          <HBox spacing="8" alignment="CENTER_LEFT">
+            <ComboBox fx:id="cbNumero" prefHeight="30" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Label text="Orden:"/>
+            <TextField fx:id="txtOrden" promptText="1" prefHeight="30" prefWidth="55"/>
+            <Button fx:id="btnAnadir" text="Anadir" onAction="#anadirNumero"
+                    prefHeight="30" prefWidth="75" styleClass="btnGreen"/>
+          </HBox>
+
+          <!-- Tabla de números asignados -->
+          <Label text="Numeros de este espectaculo (minimo 3):"
+                 style="-fx-font-weight:bold;"/>
+          <TableView fx:id="tablaAsignados" VBox.vgrow="ALWAYS" prefHeight="220">
+            <columns>
+              <TableColumn fx:id="colOrden"    text="#"        prefWidth="40"/>
+              <TableColumn fx:id="colNombre"   text="Numero"   prefWidth="160"/>
+              <TableColumn fx:id="colDuracion" text="Dur."     prefWidth="65"/>
+              <TableColumn fx:id="colArtistas" text="Artistas" prefWidth="Infinity"/>
+            </columns>
+            <columnResizePolicy>
+              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+          </TableView>
+
+          <HBox spacing="8" alignment="CENTER_LEFT">
+            <Button fx:id="btnQuitar" text="Quitar seleccionado" onAction="#quitarNumero"
+                    prefHeight="28"
+                    style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-font-weight:bold;"/>
+          </HBox>
+
+          <Separator/>
+          <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button text="Volver al Paso 1" onAction="#volverPaso1" prefHeight="32" prefWidth="140"/>
+            <Button fx:id="btnGuardar" text="Guardar espectaculo" onAction="#guardar"
+                    prefHeight="34" prefWidth="190" styleClass="btnGreen"
+                    style="-fx-font-size:13;" disable="true"/>
+          </HBox>
+        </VBox>
+      </VBox>
+    </SplitPane>
+  </center>
+  <bottom>
+    <HBox alignment="CENTER_RIGHT" spacing="8">
+      <padding><Insets bottom="8" right="12" top="4"/></padding>
+      <Button text="Volver al menu" onAction="#volver" prefWidth="120" prefHeight="30"/>
+      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda"
+              prefWidth="34" prefHeight="34" accessibleText="Ayuda"/>
+    </HBox>
+  </bottom>
+</BorderPane>

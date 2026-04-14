@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxWidth="900" maxHeight="620" minWidth="900" minHeight="620"
+            prefWidth="900" prefHeight="620"
+            stylesheets="@../styles/Styles.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.damianqm.tarea3adt.controller.GestionNumeroController">
+  <top>
+    <VBox styleClass="background" spacing="3">
+      <padding><Insets top="12" left="22" bottom="10" right="22"/></padding>
+      <Label text="Gestion de Numeros Circenses" textFill="WHITE"><font><Font size="16"/></font></Label>
+      <Label text="Crea, modifica o elimina numeros. Solo se pueden eliminar si no estan asignados a ningun espectaculo."
+             textFill="#aaaaaa" style="-fx-font-size:11;" wrapText="true"/>
+    </VBox>
+  </top>
+  <center>
+    <SplitPane dividerPositions="0.48">
+
+      <!-- Izquierda: formulario -->
+      <VBox spacing="10" style="-fx-padding:16;">
+        <Label fx:id="lblTitulo" text="Crear nuevo numero"
+               style="-fx-font-size:14; -fx-font-weight:bold; -fx-text-fill:#1a1a2e;"/>
+        <Separator/>
+
+        <!-- Selector de número existente -->
+        <Label text="Selecciona numero para modificar/eliminar:"/>
+        <ComboBox fx:id="cbNumero" maxWidth="Infinity" prefHeight="32"
+                  promptText="-- O selecciona uno existente --"/>
+
+        <Separator/>
+
+        <Label text="Nombre del numero:"/>
+        <TextField fx:id="txtNombre" promptText="Ej: Apertura Acrobatica"
+                   maxWidth="Infinity" prefHeight="32"/>
+
+        <Label text="Duracion (x,0 o x,5 minutos):"/>
+        <TextField fx:id="txtDuracion" promptText="Ej: 8,5"
+                   maxWidth="Infinity" prefHeight="32"/>
+
+        <Separator/>
+        <Label text="Artistas asignados al numero:" style="-fx-font-weight:bold;"/>
+        <TableView fx:id="tablaArtistasAsignados" prefHeight="130">
+          <columns>
+            <TableColumn fx:id="colNombreArtista" text="Artista" prefWidth="150"/>
+            <TableColumn fx:id="colEspecArtista"  text="Especialidades" prefWidth="Infinity"/>
+          </columns>
+          <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+          </columnResizePolicy>
+        </TableView>
+
+        <Label fx:id="lblMensaje" text="" wrapText="true" maxWidth="Infinity"
+               style="-fx-font-size:12;"/>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+          <Button fx:id="btnNuevo"    text="Nuevo"    onAction="#nuevo"    prefHeight="32" prefWidth="80"/>
+          <Button fx:id="btnGuardar"  text="Guardar"  onAction="#guardar"  prefHeight="32" prefWidth="100"
+                  styleClass="btnGreen"/>
+          <Button fx:id="btnEliminar" text="Eliminar" onAction="#eliminar" prefHeight="32" prefWidth="100"
+                  disable="true"
+                  style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-font-weight:bold;"/>
+        </HBox>
+      </VBox>
+
+      <!-- Derecha: lista de artistas disponibles -->
+      <VBox spacing="8" style="-fx-padding:14;">
+        <Label text="Artistas disponibles:" style="-fx-font-weight:bold;"/>
+        <Label text="Ctrl+clic para seleccion multiple."
+               style="-fx-font-size:11; -fx-text-fill:#666;"/>
+        <Label text="La seleccion se usara al crear o modificar un numero."
+               style="-fx-font-size:11; -fx-text-fill:#888;" wrapText="true"/>
+        <ListView fx:id="listArtistas" VBox.vgrow="ALWAYS"/>
+      </VBox>
+
+    </SplitPane>
+  </center>
+  <bottom>
+    <HBox alignment="CENTER_RIGHT" spacing="8">
+      <padding><Insets bottom="8" right="12" top="4"/></padding>
+      <Button text="Volver al menu" onAction="#volver" prefWidth="120" prefHeight="30"/>
+      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda"
+              prefWidth="34" prefHeight="34" accessibleText="Ayuda"/>
+    </HBox>
+  </bottom>
+</BorderPane>

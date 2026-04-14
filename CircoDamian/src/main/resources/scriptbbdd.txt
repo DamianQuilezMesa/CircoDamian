@@ -1,0 +1,131 @@
+-- ============================================================
+-- BASE DE DATOS: circo_damianqm  v2
+-- Proyecto Intermodular - DAM 2025-2026
+-- Módulo: Acceso a Datos + Desarrollo de Interfaces
+--
+-- CAMBIO PRINCIPAL respecto a v1:
+--   La relación Espectaculo ↔ Numero pasa a ser N:M mediante
+--   la tabla espectaculo_numero, que almacena también el orden
+--   que tiene cada número dentro de cada espectáculo.
+--   Esto permite que un mismo número aparezca en varios
+--   espectáculos (en posiciones distintas), igual que un
+--   artista puede participar en varios números.
+-- ============================================================
+
+CREATE DATABASE IF NOT EXISTS circo_damianqm
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE circo_damianqm;
+
+-- ─────────────────────────────────────────────────────────────
+-- PERSONAS
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS persona (
+    id           BIGINT       NOT NULL AUTO_INCREMENT,
+    nombre       VARCHAR(100) NOT NULL,
+    email        VARCHAR(150) NOT NULL UNIQUE,
+    nacionalidad VARCHAR(2)   NOT NULL,   -- código ISO: ES, FR, IT…
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS coordinacion (
+    id_persona   BIGINT  NOT NULL,
+    senior       BOOLEAN NOT NULL DEFAULT FALSE,
+    fecha_senior DATE             DEFAULT NULL,
+    PRIMARY KEY (id_persona),
+    FOREIGN KEY (id_persona) REFERENCES persona(id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS artista (
+    id_persona BIGINT       NOT NULL,
+    apodo      VARCHAR(100)          DEFAULT NULL,
+    PRIMARY KEY (id_persona),
+    FOREIGN KEY (id_persona) REFERENCES persona(id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS artista_especialidad (
+    id_artista   BIGINT NOT NULL,
+    especialidad ENUM('ACROBACIA','HUMOR','MAGIA','EQUILIBRISMO','MALABARISMO') NOT NULL,
+    PRIMARY KEY (id_artista, especialidad),
+    FOREIGN KEY (id_artista) REFERENCES artista(id_persona) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS credenciales (
+    id             BIGINT       NOT NULL AUTO_INCREMENT,
+    nombre_usuario VARCHAR(50)  NOT NULL UNIQUE,
+    password       VARCHAR(255) NOT NULL,
+    perfil         ENUM('ADMIN','COORDINACION','ARTISTA') NOT NULL,
+    id_persona     BIGINT       NOT NULL UNIQUE,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_persona) REFERENCES persona(id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+-- ─────────────────────────────────────────────────────────────
+-- ESPECTÁCULOS
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS espectaculo (
+    id             BIGINT      NOT NULL AUTO_INCREMENT,
+    nombre         VARCHAR(25) NOT NULL UNIQUE,
+    fecha_inicio   DATE        NOT NULL,
+    fecha_fin      DATE        NOT NULL,
+    id_coordinador BIGINT      NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id_coordinador) REFERENCES coordinacion(id_persona)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT ck_esp_fechas
+        CHECK (fecha_fin > fecha_inicio AND DATEDIFF(fecha_fin, fecha_inicio) <= 365)
+);
+
+-- ─────────────────────────────────────────────────────────────
+-- NÚMEROS (independientes, sin FK a espectáculo)
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS numero (
+    id       BIGINT        NOT NULL AUTO_INCREMENT,
+    nombre   VARCHAR(100)  NOT NULL,
+    duracion DECIMAL(6,1)  NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT ck_duracion
+        CHECK (duracion > 0 AND (duracion * 10) MOD 5 = 0)
+);
+
+-- ─────────────────────────────────────────────────────────────
+-- RELACIÓN N:M  Espectáculo ↔ Número  (con campo orden)
+--
+-- Un número puede aparecer en varios espectáculos.
+-- El orden indica la posición del número dentro de ESE espectáculo.
+-- Restricciones:
+--   PK (id_espectaculo, id_numero)  → un número no puede repetirse en el mismo espectáculo
+--   UNIQUE (id_espectaculo, orden)   → dos números no pueden tener el mismo orden en un espectáculo
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS espectaculo_numero (
+    id_espectaculo BIGINT NOT NULL,
+    id_numero      BIGINT NOT NULL,
+    orden          INT    NOT NULL,
+    PRIMARY KEY (id_espectaculo, id_numero),
+    UNIQUE KEY uq_esp_num_orden (id_espectaculo, orden),
+    FOREIGN KEY (id_espectaculo) REFERENCES espectaculo(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_numero)      REFERENCES numero(id)      ON DELETE RESTRICT,
+    CONSTRAINT ck_orden CHECK (orden >= 1)
+);
+
+-- ─────────────────────────────────────────────────────────────
+-- RELACIÓN N:M  Número ↔ Artista
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS numero_artista (
+    id_numero  BIGINT NOT NULL,
+    id_artista BIGINT NOT NULL,
+    PRIMARY KEY (id_numero, id_artista),
+    FOREIGN KEY (id_numero)  REFERENCES numero(id)          ON DELETE CASCADE,
+    FOREIGN KEY (id_artista) REFERENCES artista(id_persona) ON DELETE RESTRICT
+);
+
+-- ─── Datos iniciales: Admin ──────────────────────────────────
+INSERT IGNORE INTO persona (id, nombre, email, nacionalidad)
+    VALUES (1, 'Administrador General', 'admin@circo.local', 'ES');
+
+INSERT IGNORE INTO credenciales (nombre_usuario, password, perfil, id_persona)
+    VALUES ('admin', 'admin', 'ADMIN', 1);

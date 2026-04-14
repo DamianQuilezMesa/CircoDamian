@@ -1,0 +1,74 @@
+/* =====================================================
+   CIRCO – Hoja de estilos principal
+   Módulo: Desarrollo de Interfaces – CFGS DAM 2025-26
+   ===================================================== */
+
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #f5f5f5;
+}
+
+.button {
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+}
+.button:hover { -fx-opacity: 0.88; }
+
+.btnGreen {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.btnGreen:hover { -fx-background-color: #219a52; }
+
+.background { -fx-background-color: #1a1a2e; }
+
+/* ── Pantalla de Bienvenida ── */
+.header-bienvenida {
+    -fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);
+}
+.icono-circo { -fx-font-size: 56px; }
+.titulo-bienvenida {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFD700;
+}
+.subtitulo-bienvenida { -fx-font-size: 14px; -fx-text-fill: #cccccc; }
+.lbl-pregunta { -fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #333333; }
+.lbl-nota { -fx-font-size: 11px; -fx-text-fill: #888888; }
+
+.btn-bienvenida-primario {
+    -fx-background-color: #c0392b;
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+.btn-bienvenida-primario:hover { -fx-background-color: #a93226; }
+
+.btn-bienvenida-secundario {
+    -fx-background-color: #2c3e50;
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+}
+.btn-bienvenida-secundario:hover { -fx-background-color: #1a252f; }
+
+/* ── Botón Ayuda ── */
+.btn-ayuda {
+    -fx-background-color: #f39c12;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-background-radius: 50%;
+}
+.btn-ayuda:hover { -fx-background-color: #d68910; }
+
+/* ── Tablas ── */
+.table-view { -fx-border-color: #cccccc; }
+.table-view .column-header-background { -fx-background-color: #2c3e50; }
+.table-view .column-header .label { -fx-text-fill: white; -fx-font-weight: bold; }
+.table-row-cell:selected { -fx-background-color: #3498db; }

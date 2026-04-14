@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane maxWidth="900" maxHeight="620" minWidth="900" minHeight="620"
+            prefWidth="900" prefHeight="620"
+            stylesheets="@../styles/Styles.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.damianqm.tarea3adt.controller.BienvenidaController">
+  <top>
+    <VBox styleClass="header-bienvenida" alignment="CENTER" spacing="10">
+      <padding><Insets top="50" bottom="30" left="40" right="40"/></padding>
+      <Label text="BIENVENIDO/A AL CIRCO" styleClass="titulo-bienvenida"/>
+      <Label text="Sistema de Gestion Circense" styleClass="subtitulo-bienvenida"/>
+    </VBox>
+  </top>
+  <center>
+    <VBox alignment="CENTER" spacing="20">
+      <padding><Insets top="30" bottom="30" left="100" right="100"/></padding>
+      <Label text="Que deseas hacer?" style="-fx-font-size:15; -fx-font-weight:bold; -fx-text-fill:#333;"/>
+      <Separator/>
+      <Button text="Ver Espectaculos"
+              onAction="#verEspectaculos"
+              prefWidth="340" prefHeight="54"
+              styleClass="btn-bienvenida-primario"/>
+      <Button text="Iniciar Sesion"
+              onAction="#irALogin"
+              prefWidth="340" prefHeight="54"
+              styleClass="btn-bienvenida-secundario"/>
+      <Separator/>
+      <Label text="Sin cuenta solo podras ver los espectaculos disponibles."
+             style="-fx-font-size:12; -fx-text-fill:#888;" wrapText="true"
+             maxWidth="340" textAlignment="CENTER"/>
+    </VBox>
+  </center>
+  <bottom>
+    <HBox alignment="CENTER_RIGHT">
+      <padding><Insets bottom="12" right="15" top="8"/></padding>
+      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda"
+              prefWidth="34" prefHeight="34" accessibleText="Ayuda"/>
+    </HBox>
+  </bottom>
+</BorderPane>
