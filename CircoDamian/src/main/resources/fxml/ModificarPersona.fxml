@@ -4,8 +4,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxWidth="900" maxHeight="620" minWidth="900" minHeight="620"
-            prefWidth="900" prefHeight="620"
+<BorderPane
+            prefWidth="1120" prefHeight="760"
             stylesheets="@../styles/Styles.css"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.damianqm.tarea3adt.controller.ModificarPersonaController">
@@ -88,7 +88,7 @@
   </center>
   <bottom>
     <HBox alignment="CENTER_RIGHT" spacing="10">
-      <padding><Insets bottom="10" right="16" top="8"/></padding>
+      <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
       <Button text="Guardar cambios" onAction="#guardar"  prefWidth="150" prefHeight="34" styleClass="btnGreen"/>
       <Button text="Volver"          onAction="#volver"   prefWidth="100" prefHeight="34"/>
       <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda" prefWidth="34" prefHeight="34"/>

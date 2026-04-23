@@ -15,9 +15,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-/**
- * CU2: Login / Logout / Recuperar contraseña.
- */
+/** Pantalla de Login (CU2). */
 @Controller
 public class LoginController implements Initializable {
 
@@ -27,57 +25,52 @@ public class LoginController implements Initializable {
     @FXML private CheckBox chkMostrarPassword;
     @FXML private Label lblMensaje;
 
-    @Autowired
-    private SesionService sesionService;
+    @Autowired private SesionService sesionService;
+    @Lazy @Autowired private StageManager stageManager;
 
-    @Lazy
-    @Autowired
-    private StageManager stageManager;
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        tfPasswordVisible.setVisible(false);
+        lblMensaje.setText("");
+
+        // Mantener sincronizados los dos campos de contraseña
+        pfPassword.textProperty().addListener((obs, viejo, nuevo) -> {
+            if (!tfPasswordVisible.getText().equals(nuevo)) {
+                tfPasswordVisible.setText(nuevo);
+            }
+        });
+        tfPasswordVisible.textProperty().addListener((obs, viejo, nuevo) -> {
+            if (!pfPassword.getText().equals(nuevo)) {
+                pfPassword.setText(nuevo);
+            }
+        });
+    }
 
     @FXML
     private void login(ActionEvent event) {
         String usuario = txtUsuario.getText().trim();
-        String password = chkMostrarPassword.isSelected()
-                ? tfPasswordVisible.getText() : pfPassword.getText();
+        String password = pfPassword.getText();
+
         if (usuario.isEmpty() || password.isEmpty()) {
             lblMensaje.setText("Introduce usuario y contraseña.");
             return;
         }
+
         if (sesionService.login(usuario, password)) {
             stageManager.switchScene(FxmlView.MAIN);
         } else {
             lblMensaje.setText("Usuario o contraseña incorrectos.");
-            pfPassword.clear(); tfPasswordVisible.clear();
+            pfPassword.clear();
+            tfPasswordVisible.clear();
         }
     }
 
+    /** Alterna entre mostrar u ocultar la contraseña. */
     @FXML
     private void toggleMostrarPassword(ActionEvent event) {
-        if (chkMostrarPassword.isSelected()) {
-            tfPasswordVisible.setText(pfPassword.getText());
-            tfPasswordVisible.setVisible(true);
-            pfPassword.setVisible(false);
-        } else {
-            pfPassword.setText(tfPasswordVisible.getText());
-            pfPassword.setVisible(true);
-            tfPasswordVisible.setVisible(false);
-        }
-    }
-
-    /** Ayuda contextual de la pantalla de Login. */
-    @FXML
-    private void mostrarAyuda(ActionEvent event) {
-        Alert ayuda = new Alert(Alert.AlertType.INFORMATION);
-        ayuda.setTitle("Ayuda – Inicio de Sesión");
-        ayuda.setHeaderText("¿Cómo iniciar sesión?");
-        ayuda.setContentText(
-            "Introduce tu nombre de usuario y contraseña para acceder al sistema.\n\n" +
-            "• Marca 'Mostrar contraseña' si quieres ver lo que escribes.\n" +
-            "• Si olvidaste tu contraseña, pulsa 'Recuperar contraseña' e introduce tu usuario.\n" +
-            "• Las credenciales del administrador son: admin / admin.\n\n" +
-            "Si no tienes cuenta, contacta con el Administrador."
-        );
-        ayuda.showAndWait();
+        boolean mostrar = chkMostrarPassword.isSelected();
+        tfPasswordVisible.setVisible(mostrar);
+        pfPassword.setVisible(!mostrar);
     }
 
     @FXML
@@ -86,28 +79,41 @@ public class LoginController implements Initializable {
         dialog.setTitle("Recuperar contraseña");
         dialog.setHeaderText("Introduce tu nombre de usuario");
         dialog.setContentText("Usuario:");
+
         Optional<String> resultado = dialog.showAndWait();
-        resultado.ifPresent(usuario -> {
-            Optional<String> pass = sesionService.recuperarPassword(usuario);
-            Alert alert = new Alert(pass.isPresent() ? Alert.AlertType.INFORMATION : Alert.AlertType.WARNING);
+        if (resultado.isPresent()) {
+            Optional<String> pass = sesionService.recuperarPassword(resultado.get());
+            Alert alert;
+            if (pass.isPresent()) {
+                alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setContentText("Tu contraseña es: " + pass.get());
+            } else {
+                alert = new Alert(Alert.AlertType.WARNING);
+                alert.setContentText("No se encontró ningún usuario con ese nombre.");
+            }
             alert.setTitle("Recuperar contraseña");
             alert.setHeaderText(null);
-            alert.setContentText(pass.isPresent()
-                    ? "Tu contraseña es: " + pass.get()
-                    : "No se encontró ningún usuario con ese nombre.");
             alert.showAndWait();
-        });
+        }
     }
-
 
     @FXML
-    private void volverBienvenida(javafx.event.ActionEvent e) {
-        stageManager.switchScene(com.damianqm.tarea3adt.view.FxmlView.BIENVENIDA);
+    private void mostrarAyuda(ActionEvent event) {
+        Alert ayuda = new Alert(Alert.AlertType.INFORMATION);
+        ayuda.setTitle("Ayuda – Inicio de Sesión");
+        ayuda.setHeaderText("¿Cómo iniciar sesión?");
+        ayuda.setContentText(
+            "Introduce tu nombre de usuario y contraseña para acceder.\n\n" +
+            "• Marca 'Mostrar contraseña' para verla mientras la escribes.\n" +
+            "• Si la olvidaste, pulsa 'Recuperar contraseña'.\n" +
+            "• Credenciales del admin: admin / admin.\n\n" +
+            "Pulsa F1 para abrir la ayuda en cualquier pantalla."
+        );
+        ayuda.showAndWait();
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        tfPasswordVisible.setVisible(false);
-        lblMensaje.setText("");
+    @FXML
+    private void volverBienvenida(ActionEvent event) {
+        stageManager.switchScene(FxmlView.BIENVENIDA);
     }
 }

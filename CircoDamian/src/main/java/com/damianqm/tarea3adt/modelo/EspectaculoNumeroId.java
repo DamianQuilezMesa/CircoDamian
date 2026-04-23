@@ -4,31 +4,28 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Clase de clave primaria compuesta para EspectaculoNumero.
- * Los campos deben coincidir en nombre y tipo con los @Id de EspectaculoNumero.
+ * Clase usada como clave primaria compuesta de EspectaculoNumero.
+ * Los nombres de los campos deben coincidir con los @Id de la entidad.
  */
 public class EspectaculoNumeroId implements Serializable {
 
-    private Long espectaculo; // mismo nombre que el campo @Id en EspectaculoNumero
+    private Long espectaculo;
     private Long numero;
 
     public EspectaculoNumeroId() {}
 
     public EspectaculoNumeroId(Long espectaculo, Long numero) {
         this.espectaculo = espectaculo;
-        this.numero      = numero;
+        this.numero = numero;
     }
-
-    public Long getEspectaculo() { return espectaculo; }
-    public Long getNumero()      { return numero; }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof EspectaculoNumeroId)) return false;
         EspectaculoNumeroId that = (EspectaculoNumeroId) o;
-        return Objects.equals(espectaculo, that.espectaculo) &&
-               Objects.equals(numero, that.numero);
+        return Objects.equals(espectaculo, that.espectaculo)
+                && Objects.equals(numero, that.numero);
     }
 
     @Override

@@ -5,13 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Espectáculo del circo.
- * - Nombre único, máximo 25 caracteres.
- * - Periodo de fechas de vigencia (inicio y fin), no superior a 1 año.
- * - Dirigido por una sola persona de Coordinación.
- * - Compuesto de al menos 3 números circenses (via EspectaculoNumero).
- */
+/** Espectáculo: nombre único (máx 25 chars), periodo ≤1 año, coordinador y ≥3 números. */
 @Entity
 @Table(name = "espectaculo")
 public class Espectaculo {
@@ -33,11 +27,7 @@ public class Espectaculo {
     @JoinColumn(name = "id_coordinador", nullable = false)
     private Coordinacion coordinador;
 
-    /**
-     * Relación con los números a través de la tabla espectaculo_numero.
-     * cascade=ALL + orphanRemoval=true: al eliminar la relación se borra la fila
-     * de la tabla intermedia (NO el número en sí, que es independiente).
-     */
+    /** Números con su orden. Cascade + orphanRemoval para limpiar la tabla intermedia. */
     @OneToMany(mappedBy = "espectaculo",
                cascade = CascadeType.ALL,
                fetch = FetchType.LAZY,
@@ -45,38 +35,27 @@ public class Espectaculo {
     @OrderBy("orden ASC")
     private List<EspectaculoNumero> numerosEnEspectaculo = new ArrayList<>();
 
-    // ─── Constructores ────────────────────────────────────────────────
     public Espectaculo() {}
 
-    public Espectaculo(String nombre, LocalDate fechaInicio, LocalDate fechaFin,
-                       Coordinacion coordinador) {
-        this.nombre      = nombre;
+    public Espectaculo(String nombre, LocalDate fechaInicio, LocalDate fechaFin, Coordinacion coordinador) {
+        this.nombre = nombre;
         this.fechaInicio = fechaInicio;
-        this.fechaFin    = fechaFin;
+        this.fechaFin = fechaFin;
         this.coordinador = coordinador;
     }
 
-    // ─── Getters / Setters ────────────────────────────────────────────
-    public Long getId()         { return id; }
-    public void setId(Long id)  { this.id = id; }
-
-    public String getNombre()          { return nombre; }
-    public void   setNombre(String n)  { this.nombre = n; }
-
-    public LocalDate getFechaInicio()             { return fechaInicio; }
-    public void      setFechaInicio(LocalDate d)  { this.fechaInicio = d; }
-
-    public LocalDate getFechaFin()              { return fechaFin; }
-    public void      setFechaFin(LocalDate d)   { this.fechaFin = d; }
-
-    public Coordinacion getCoordinador()              { return coordinador; }
-    public void         setCoordinador(Coordinacion c){ this.coordinador = c; }
-
-    public List<EspectaculoNumero> getNumerosEnEspectaculo()                         { return numerosEnEspectaculo; }
-    public void                    setNumerosEnEspectaculo(List<EspectaculoNumero> l){ this.numerosEnEspectaculo = l; }
-
-    @Override
-    public String toString() {
-        return "[" + id + "] " + nombre + " (" + fechaInicio + " → " + fechaFin + ")";
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public LocalDate getFechaInicio() { return fechaInicio; }
+    public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
+    public LocalDate getFechaFin() { return fechaFin; }
+    public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
+    public Coordinacion getCoordinador() { return coordinador; }
+    public void setCoordinador(Coordinacion coordinador) { this.coordinador = coordinador; }
+    public List<EspectaculoNumero> getNumerosEnEspectaculo() { return numerosEnEspectaculo; }
+    public void setNumerosEnEspectaculo(List<EspectaculoNumero> numerosEnEspectaculo) {
+        this.numerosEnEspectaculo = numerosEnEspectaculo;
     }
 }

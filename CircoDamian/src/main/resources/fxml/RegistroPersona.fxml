@@ -3,29 +3,30 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
+<?import com.damianqm.tarea3adt.componentes.CampoPassword?>
 
-<BorderPane maxWidth="900" maxHeight="620" minWidth="900" minHeight="620"
-            prefWidth="900" prefHeight="620"
+<BorderPane
+            prefWidth="1120" prefHeight="760"
             stylesheets="@../styles/Styles.css"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.damianqm.tarea3adt.controller.RegistroPersonaController">
   <top>
     <VBox styleClass="background" spacing="4">
       <padding><Insets top="14" left="24" bottom="12" right="24"/></padding>
-      <Label text="Registrar Nueva Persona" textFill="WHITE"><font><Font size="17"/></font></Label>
+      <Label text="Registrar Nueva Persona" textFill="WHITE"><font><Font size="18"/></font></Label>
       <Label text="Solo el Administrador puede registrar personas"
-             textFill="#aaaaaa" style="-fx-font-size:11;"/>
+             textFill="#aaaaaa" style="-fx-font-size:12;"/>
     </VBox>
   </top>
   <center>
     <ScrollPane fitToWidth="true" fitToHeight="false"
                 style="-fx-background-color:transparent;" hbarPolicy="NEVER">
-      <VBox spacing="9" maxWidth="860">
-        <padding><Insets top="14" left="30" right="30" bottom="14"/></padding>
+      <VBox spacing="10" maxWidth="1060">
+        <padding><Insets top="16" left="36" right="36" bottom="16"/></padding>
 
         <!-- Datos personales -->
-        <Label text="DATOS PERSONALES" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e;"/>
-        <GridPane hgap="14" vgap="8" maxWidth="Infinity">
+        <Label text="DATOS PERSONALES" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e; -fx-font-size:13;"/>
+        <GridPane hgap="16" vgap="8" maxWidth="Infinity">
           <columnConstraints>
             <ColumnConstraints percentWidth="50"/>
             <ColumnConstraints percentWidth="50"/>
@@ -33,80 +34,80 @@
           <Label text="Nombre completo:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
           <Label text="Email:"           GridPane.columnIndex="1" GridPane.rowIndex="0"/>
           <TextField fx:id="txtNombre" promptText="Nombre y apellidos"
-                     prefHeight="32" maxWidth="Infinity"
+                     prefHeight="34" maxWidth="Infinity"
                      GridPane.columnIndex="0" GridPane.rowIndex="1"/>
           <TextField fx:id="txtEmail" promptText="nombre@dominio.com"
-                     prefHeight="32" maxWidth="Infinity"
+                     prefHeight="34" maxWidth="Infinity"
                      GridPane.columnIndex="1" GridPane.rowIndex="1"/>
           <Label text="Nacionalidad:" GridPane.columnIndex="0" GridPane.rowIndex="2"
                  GridPane.columnSpan="2"/>
-          <ComboBox fx:id="cbNacionalidad" prefHeight="32" maxWidth="Infinity"
-                    promptText="-- Selecciona un pais --"
+          <ComboBox fx:id="cbNacionalidad" prefHeight="34" maxWidth="Infinity"
+                    promptText="-- Selecciona un país --"
                     GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="2"/>
         </GridPane>
 
         <Separator/>
 
         <!-- Perfil -->
-        <Label text="PERFIL" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e;"/>
-        <HBox spacing="24">
+        <Label text="PERFIL" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e; -fx-font-size:13;"/>
+        <HBox spacing="30">
           <RadioButton fx:id="rbArtista" text="Artista" selected="true">
             <toggleGroup><ToggleGroup fx:id="tgPerfil"/></toggleGroup>
           </RadioButton>
-          <RadioButton fx:id="rbCoordinacion" text="Coordinacion" toggleGroup="$tgPerfil"/>
+          <RadioButton fx:id="rbCoordinacion" text="Coordinación" toggleGroup="$tgPerfil"/>
         </HBox>
 
         <Separator/>
 
         <!-- Dos columnas: Artista | Coordinacion -->
-        <GridPane hgap="20" vgap="8" maxWidth="Infinity">
+        <GridPane hgap="24" vgap="8" maxWidth="Infinity">
           <columnConstraints>
             <ColumnConstraints percentWidth="50"/>
             <ColumnConstraints percentWidth="50"/>
           </columnConstraints>
 
           <!-- Col 0: Datos Artista -->
-          <VBox spacing="7" GridPane.columnIndex="0" GridPane.rowIndex="0">
-            <Label text="DATOS ARTISTA" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e;"/>
-            <TextField fx:id="txtApodo" promptText="Apodo (opcional)" prefHeight="32" maxWidth="Infinity"/>
+          <VBox spacing="8" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <Label text="DATOS ARTISTA" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e; -fx-font-size:13;"/>
+            <TextField fx:id="txtApodo" promptText="Apodo (opcional)" prefHeight="34" maxWidth="Infinity"/>
             <Label text="Especialidades (al menos una):"/>
-            <HBox spacing="12">
+            <HBox spacing="14">
               <CheckBox fx:id="chkAcrobacia"    text="Acrobacia"/>
               <CheckBox fx:id="chkHumor"        text="Humor"/>
               <CheckBox fx:id="chkMagia"        text="Magia"/>
             </HBox>
-            <HBox spacing="12">
+            <HBox spacing="14">
               <CheckBox fx:id="chkEquilibrismo" text="Equilibrismo"/>
               <CheckBox fx:id="chkMalabarismo"  text="Malabarismo"/>
             </HBox>
           </VBox>
 
           <!-- Col 1: Datos Coordinacion -->
-          <VBox spacing="7" GridPane.columnIndex="1" GridPane.rowIndex="0">
-            <Label text="DATOS COORDINACION" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e;"/>
+          <VBox spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <Label text="DATOS COORDINACIÓN" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e; -fx-font-size:13;"/>
             <CheckBox fx:id="chkSenior" text="Es Senior"/>
             <Label text="Fecha desde que es Senior:"/>
-            <DatePicker fx:id="dpFechaSenior" prefWidth="220" disable="true"/>
+            <DatePicker fx:id="dpFechaSenior" prefWidth="260" prefHeight="34" disable="true"/>
           </VBox>
         </GridPane>
 
         <Separator/>
 
         <!-- Credenciales -->
-        <Label text="CREDENCIALES DE ACCESO" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e;"/>
-        <GridPane hgap="14" vgap="8" maxWidth="Infinity">
+        <Label text="CREDENCIALES DE ACCESO" style="-fx-font-weight:bold; -fx-text-fill:#1a1a2e; -fx-font-size:13;"/>
+        <GridPane hgap="16" vgap="8" maxWidth="Infinity">
           <columnConstraints>
             <ColumnConstraints percentWidth="50"/>
             <ColumnConstraints percentWidth="50"/>
           </columnConstraints>
-          <Label text="Usuario (solo letras minusculas, +2 chars):"
+          <Label text="Usuario (solo letras minúsculas, más de 2 chars):"
                  GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-          <Label text="Contrasena (sin espacios, +2 chars):"
+          <Label text="Contraseña (sin espacios, más de 2 chars):"
                  GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-          <TextField   fx:id="txtUsuario"  promptText="usuario"    prefHeight="32" maxWidth="Infinity"
-                       GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-          <PasswordField fx:id="pfPassword" promptText="contrasena" prefHeight="32" maxWidth="Infinity"
-                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+          <TextField fx:id="txtUsuario" promptText="usuario" prefHeight="34" maxWidth="Infinity"
+                     GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+          <CampoPassword fx:id="cpPassword" maxWidth="Infinity"
+                         GridPane.columnIndex="1" GridPane.rowIndex="1"/>
         </GridPane>
 
         <Label fx:id="lblMensaje" text="" style="-fx-font-size:12;" wrapText="true" maxWidth="Infinity"/>
@@ -114,11 +115,11 @@
     </ScrollPane>
   </center>
   <bottom>
-    <HBox alignment="CENTER_RIGHT" spacing="10">
-      <padding><Insets bottom="10" right="16" top="8"/></padding>
-      <Button text="Registrar" onAction="#registrar" prefWidth="120" prefHeight="34" styleClass="btnGreen"/>
-      <Button text="Volver"    onAction="#volver"    prefWidth="100" prefHeight="34"/>
-      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda" prefWidth="34" prefHeight="34"/>
+    <HBox alignment="CENTER_RIGHT" spacing="12">
+      <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
+      <Button text="Registrar" onAction="#registrar" prefWidth="130" prefHeight="36" styleClass="btnGreen"/>
+      <Button text="Volver"    onAction="#volver"    prefWidth="110" prefHeight="36"/>
+      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda" prefWidth="36" prefHeight="36"/>
     </HBox>
   </bottom>
 </BorderPane>

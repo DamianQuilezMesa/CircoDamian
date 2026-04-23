@@ -8,74 +8,40 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-/**
- * Gestiona la sesión activa de la aplicación (CU2: Login/Logout).
- * Implementa patrón Singleton de sesión a través de Spring (@Service).
- */
+/** Gestiona la sesión del usuario activo. Singleton de Spring, estado compartido. */
 @Service
 public class SesionService {
 
-    @Autowired
-    private CredencialesRepository credencialesRepository;
+    @Autowired private CredencialesRepository credencialesRepository;
 
-    /** Usuario autenticado actualmente. null = Invitado. */
-    private Credenciales usuarioActual = null;
+    private Credenciales usuarioActual;
 
-    // ─── Login ────────────────────────────────────────────────────────
-
-    /**
-     * Intenta autenticar con usuario y contraseña.
-     * @return true si las credenciales son correctas y no hay sesión activa.
-     */
-    public boolean login(String nombreUsuario, String password) {
-        if (usuarioActual != null) return false; // ya hay sesión activa
+    public boolean login(String usuario, String password) {
+        if (usuarioActual != null) return false;
         Optional<Credenciales> cred = credencialesRepository
-                .findByNombreUsuarioAndPassword(nombreUsuario.toLowerCase().trim(), password);
-        if (cred.isPresent()) {
-            usuarioActual = cred.get();
-            return true;
-        }
-        return false;
+                .findByNombreUsuarioAndPassword(usuario.toLowerCase().trim(), password);
+        cred.ifPresent(c -> usuarioActual = c);
+        return cred.isPresent();
     }
 
-    /** Cierra la sesión activa, volviendo al perfil Invitado. */
-    public void logout() {
-        usuarioActual = null;
-    }
+    public void logout() { usuarioActual = null; }
 
-    // ─── Consultas de sesión ──────────────────────────────────────────
+    public boolean isAutenticado()  { return usuarioActual != null; }
+    public Credenciales getUsuarioActual() { return usuarioActual; }
+    public Perfil getPerfilActual() { return usuarioActual != null ? usuarioActual.getPerfil() : null; }
 
-    public boolean isAutenticado() {
-        return usuarioActual != null;
-    }
+    public boolean isAdmin()        { return isAutenticado() && usuarioActual.getPerfil() == Perfil.ADMIN; }
+    public boolean isArtista()      { return isAutenticado() && usuarioActual.getPerfil() == Perfil.ARTISTA; }
 
-    public Credenciales getUsuarioActual() {
-        return usuarioActual;
-    }
-
-    public Perfil getPerfilActual() {
-        return usuarioActual != null ? usuarioActual.getPerfil() : null;
-    }
-
-    public boolean isAdmin() {
-        return isAutenticado() && usuarioActual.getPerfil() == Perfil.ADMIN;
-    }
-
+    /** Admin también puede gestionar como Coordinación. */
     public boolean isCoordinacion() {
         return isAutenticado() && (usuarioActual.getPerfil() == Perfil.COORDINACION
                 || usuarioActual.getPerfil() == Perfil.ADMIN);
     }
 
-    public boolean isArtista() {
-        return isAutenticado() && usuarioActual.getPerfil() == Perfil.ARTISTA;
-    }
-
-    /**
-     * Recupera la contraseña de un usuario por nombre de usuario.
-     * (CU2 – recuperar contraseña: en producción se enviaría por email)
-     */
-    public Optional<String> recuperarPassword(String nombreUsuario) {
-        return credencialesRepository.findByNombreUsuario(nombreUsuario.toLowerCase().trim())
+    public Optional<String> recuperarPassword(String usuario) {
+        return credencialesRepository
+                .findByNombreUsuario(usuario.toLowerCase().trim())
                 .map(Credenciales::getPassword);
     }
 }

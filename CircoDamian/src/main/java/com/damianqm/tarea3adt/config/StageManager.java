@@ -1,56 +1,73 @@
 package com.damianqm.tarea3adt.config;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.util.Objects;
-
-import org.slf4j.Logger;
-
 import com.damianqm.tarea3adt.view.FxmlView;
-
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
 
 /**
- * Gestiona el cambio de escenas en el Stage principal.
- * Tamaño fijo 900×620 — no redimensionable.
+ * Gestiona el Stage principal y el cambio de escenas.
+ * Tamaño fijo, ventana no redimensionable.
+ * Además conecta la tecla F1 a la ayuda del controlador activo.
  */
 public class StageManager {
 
-    private static final Logger LOG = getLogger(StageManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StageManager.class);
 
-    /** Ancho fijo de todas las ventanas */
-    private static final double W = 900;
-    /** Alto fijo de todas las ventanas */
-    private static final double H = 620;
+    /** Ancho fijo (incluye márgenes del SO). */
+    private static final double W = 1120;
+    /** Alto fijo (incluye barra de título del SO). */
+    private static final double H = 760;
 
-    private final Stage            primaryStage;
+    private final Stage primaryStage;
     private final SpringFXMLLoader springFXMLLoader;
 
     public StageManager(SpringFXMLLoader springFXMLLoader, Stage stage) {
         this.springFXMLLoader = springFXMLLoader;
-        this.primaryStage     = stage;
+        this.primaryStage = stage;
     }
 
-    public void switchScene(final FxmlView view) {
-        Parent root = loadViewNodeHierarchy(view.getFxmlFile());
-        show(root, view.getTitle());
+    /** Cambia la escena mostrando la vista indicada y engancha F1 a su ayuda. */
+    public void switchScene(FxmlView view) {
+        try {
+            FXMLLoader loader = springFXMLLoader.loadWithLoader(view.getFxmlFile());
+            mostrar(loader.getRoot(), view.getTitle(), loader.getController());
+        } catch (Exception e) {
+            LOG.error("Error al cargar la vista: " + view.getFxmlFile(), e);
+            Platform.exit();
+        }
     }
 
-    private void show(final Parent rootnode, String title) {
+    private void mostrar(Parent root, String title, Object controller) {
         Scene scene = primaryStage.getScene();
         if (scene == null) {
-            scene = new Scene(rootnode, W, H);
+            scene = new Scene(root, W, H);
         } else {
-            scene.setRoot(rootnode);
+            scene.setRoot(root);
         }
+
+        // F1: abre la ayuda del controlador actual (si tiene el método)
+        scene.setOnKeyPressed((KeyEvent ev) -> {
+            if (ev.getCode() == KeyCode.F1) {
+                invocarAyuda(controller);
+                ev.consume();
+            }
+        });
 
         primaryStage.setTitle(title);
         primaryStage.setScene(scene);
 
-        // Tamaño fijo — no redimensionable
+        primaryStage.setMaximized(false);
+        primaryStage.setFullScreen(false);
         primaryStage.setWidth(W);
         primaryStage.setHeight(H);
         primaryStage.setMinWidth(W);
@@ -58,29 +75,24 @@ public class StageManager {
         primaryStage.setMaxWidth(W);
         primaryStage.setMaxHeight(H);
         primaryStage.setResizable(false);
-
         primaryStage.centerOnScreen();
-
-        try {
-            primaryStage.show();
-        } catch (Exception e) {
-            logAndExit("Unable to show scene: " + title, e);
-        }
+        primaryStage.show();
     }
 
-    private Parent loadViewNodeHierarchy(String fxmlFilePath) {
-        Parent rootNode = null;
+    /**
+     * Busca el método 'mostrarAyuda' del controlador y lo invoca.
+     * Usamos reflexión para no obligar a que todos implementen una interfaz común.
+     */
+    private void invocarAyuda(Object controller) {
+        if (controller == null) return;
         try {
-            rootNode = springFXMLLoader.load(fxmlFilePath);
-            Objects.requireNonNull(rootNode, "Root FXML node must not be null");
+            Method m = controller.getClass().getDeclaredMethod("mostrarAyuda", ActionEvent.class);
+            m.setAccessible(true);
+            m.invoke(controller, (ActionEvent) null);
+        } catch (NoSuchMethodException e) {
+            // La pantalla no tiene ayuda, no hacemos nada
         } catch (Exception e) {
-            logAndExit("Unable to load FXML: " + fxmlFilePath, e);
+            LOG.warn("No se pudo abrir la ayuda con F1", e);
         }
-        return rootNode;
-    }
-
-    private void logAndExit(String errorMsg, Exception exception) {
-        LOG.error(errorMsg, exception, exception.getCause());
-        Platform.exit();
     }
 }

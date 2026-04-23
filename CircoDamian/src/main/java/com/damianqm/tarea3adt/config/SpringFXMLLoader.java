@@ -1,34 +1,52 @@
 package com.damianqm.tarea3adt.config;
 
-import java.io.IOException;
-import java.util.ResourceBundle;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.util.ResourceBundle;
+
 /**
- * Will load the FXML hierarchy as specified in the load method and register
- * Spring as the FXML Controller Factory. Allows Spring and Java FX to coexist
- * once the Spring Application context has been bootstrapped.
+ * Carga los archivos FXML integrándolos con Spring.
+ * Los controladores declarados en fx:controller se obtienen del
+ * contexto de Spring, así vienen con sus @Autowired ya inyectados.
  */
 @Component
 public class SpringFXMLLoader {
-    private final ResourceBundle resourceBundle;
+
     private final ApplicationContext context;
+    private final ResourceBundle resourceBundle;
 
     @Autowired
     public SpringFXMLLoader(ApplicationContext context, ResourceBundle resourceBundle) {
-        this.resourceBundle = resourceBundle;
         this.context = context;
+        this.resourceBundle = resourceBundle;
     }
 
-    public Parent load(String fxmlPath) throws IOException {      
+    /** Carga un FXML y devuelve el nodo raíz. */
+    public Parent load(String fxmlPath) throws IOException {
+        return prepararLoader(fxmlPath).load();
+    }
+
+    /**
+     * Carga un FXML y devuelve el FXMLLoader.
+     * Útil para obtener también el controller con getController(),
+     * necesario por ejemplo para enganchar F1 a su método de ayuda.
+     */
+    public FXMLLoader loadWithLoader(String fxmlPath) throws IOException {
+        FXMLLoader loader = prepararLoader(fxmlPath);
+        loader.load();
+        return loader;
+    }
+
+    private FXMLLoader prepararLoader(String fxmlPath) {
         FXMLLoader loader = new FXMLLoader();
-        loader.setControllerFactory(context::getBean); //Spring now FXML Controller Factory
+        loader.setControllerFactory(context::getBean);
         loader.setResources(resourceBundle);
         loader.setLocation(getClass().getResource(fxmlPath));
-        return loader.load();
+        return loader;
     }
 }

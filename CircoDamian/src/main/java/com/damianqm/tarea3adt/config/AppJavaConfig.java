@@ -1,44 +1,32 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.damianqm.tarea3adt.config;
 
-import java.io.IOException;
-import java.util.ResourceBundle;
 import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 
+import java.util.ResourceBundle;
 
+/**
+ * Configuración de Spring para integrar JavaFX.
+ * El StageManager se marca como Lazy porque el Stage no existe
+ * hasta que JavaFX ha arrancado y llama a start().
+ */
 @Configuration
 public class AppJavaConfig {
-	
-    @Autowired 
-    SpringFXMLLoader springFXMLLoader;
 
-//    /**
-//     * Useful when dumping stack trace to a string for logging.
-//     * @return ExceptionWriter contains logging utility methods
-//     */
-//    @Bean
-//    @Scope("prototype")
-//    public ExceptionWriter exceptionWriter() {
-//        return new ExceptionWriter(new StringWriter());
-//    }
+    @Autowired
+    private SpringFXMLLoader springFXMLLoader;
 
     @Bean
     public ResourceBundle resourceBundle() {
         return ResourceBundle.getBundle("Bundle");
     }
-    
+
     @Bean
-    @Lazy(value = true) //Stage only created after Spring context bootstap
-    public StageManager stageManager(Stage stage) throws IOException {
+    @Lazy
+    public StageManager stageManager(Stage stage) {
         return new StageManager(springFXMLLoader, stage);
     }
-
 }

@@ -4,76 +4,82 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefWidth="900" prefHeight="620"
+<BorderPane prefWidth="1120" prefHeight="760"
             stylesheets="@../styles/Styles.css"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.damianqm.tarea3adt.controller.VerEspectaculosController">
   <top>
-    <VBox style="-fx-background-color:#1a1a2e; -fx-padding:12 20 12 20;">
-      <Label text="Espectaculos del Circo" textFill="WHITE"><font><Font size="20"/></font></Label>
-      <Label text="Selecciona un espectaculo para ver su informacion"
-             textFill="#aaaaaa" style="-fx-font-size:11;"/>
+    <VBox style="-fx-background-color:#1a1a2e; -fx-padding:14 24 12 24;">
+      <Label text="Espectáculos del Circo" textFill="WHITE"><font><Font size="20"/></font></Label>
+      <Label text="Selecciona un espectáculo para ver su información"
+             textFill="#aaaaaa" style="-fx-font-size:12;"/>
     </VBox>
   </top>
   <center>
-    <VBox spacing="12" style="-fx-padding:20;">
+    <VBox spacing="14" style="-fx-padding:20;">
 
       <!-- Selector -->
       <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Espectaculo:" style="-fx-font-weight:bold; -fx-font-size:13;"/>
-        <ComboBox fx:id="cbEspectaculo" prefWidth="560" prefHeight="34"
-                  promptText="-- Selecciona un espectaculo --"/>
+        <Label text="Espectáculo:" style="-fx-font-weight:bold; -fx-font-size:13;"/>
+        <ComboBox fx:id="cbEspectaculo" prefWidth="600" prefHeight="34"
+                  promptText="-- Selecciona un espectáculo --"/>
       </HBox>
 
-      <!-- Mensaje cuando no hay selección -->
+      <!-- Mensaje inicial cuando no hay selección -->
       <Label fx:id="lblSinSeleccion"
-             text="Selecciona un espectaculo del desplegable para ver su informacion."
+             text="Selecciona un espectáculo del desplegable para ver su información."
              style="-fx-text-fill:#888; -fx-font-size:13;" wrapText="true"/>
 
-      <!-- Panel de detalle (oculto hasta selección) -->
-      <VBox fx:id="panelDetallCompleto" spacing="10">
+      <!-- Panel de detalle básico (siempre visible tras seleccionar) -->
+      <VBox fx:id="panelDetallCompleto" spacing="12" visible="false" managed="false">
 
         <Separator/>
 
-        <!-- Datos básicos (siempre, CU1) -->
-        <Label text="Informacion basica" style="-fx-font-weight:bold; -fx-font-size:13;
-               -fx-text-fill:#1a1a2e;"/>
+        <!-- Datos básicos (CU1) -->
+        <Label text="Información básica"
+               style="-fx-font-weight:bold; -fx-font-size:13; -fx-text-fill:#1a1a2e;"/>
         <GridPane hgap="16" vgap="6">
-          <Label text="ID:" style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+          <Label text="ID:" style="-fx-font-weight:bold;"
+                 GridPane.columnIndex="0" GridPane.rowIndex="0"/>
           <Label fx:id="lblId" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-          <Label text="Nombre:" style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-          <Label fx:id="lblNombre" style="-fx-font-size:14;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-          <Label text="Periodo:" style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+          <Label text="Nombre:" style="-fx-font-weight:bold;"
+                 GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+          <Label fx:id="lblNombre" style="-fx-font-size:14;"
+                 GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+          <Label text="Periodo:" style="-fx-font-weight:bold;"
+                 GridPane.columnIndex="0" GridPane.rowIndex="2"/>
           <Label fx:id="lblPeriodo" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
         </GridPane>
 
-        <Separator/>
+        <!-- Panel de información completa (solo autenticados, CU4) -->
+        <VBox fx:id="panelInfoCompleta" spacing="10" visible="false" managed="false">
+          <Separator/>
+          <Label text="Información completa"
+                 style="-fx-font-weight:bold; -fx-font-size:13; -fx-text-fill:#1a1a2e;"/>
+          <GridPane hgap="16" vgap="6">
+            <Label text="Coordinador:" style="-fx-font-weight:bold;"
+                   GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Label fx:id="lblCoordinador" wrapText="true" maxWidth="500"
+                   GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <Label fx:id="lblSenior"
+                   GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+          </GridPane>
 
-        <!-- Datos completos (solo autenticados, CU4) -->
-        <Label text="Informacion completa (requiere sesion iniciada)"
-               style="-fx-font-weight:bold; -fx-font-size:13; -fx-text-fill:#1a1a2e;"/>
-        <GridPane hgap="16" vgap="6">
-          <Label text="Coordinador:" style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-          <Label fx:id="lblCoordinador" wrapText="true" maxWidth="500"
-                 GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-          <Label text="" style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-          <Label fx:id="lblSenior" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-        </GridPane>
-
-        <Label text="Numeros y artistas (ordenados):" style="-fx-font-weight:bold;"/>
-        <TextArea fx:id="taNumeros" editable="false" wrapText="true"
-                  prefHeight="240" VBox.vgrow="ALWAYS"
-                  style="-fx-font-family:'Courier New'; -fx-font-size:12;"/>
+          <Label text="Números y artistas (ordenados):" style="-fx-font-weight:bold;"/>
+          <TextArea fx:id="taNumeros" editable="false" wrapText="true"
+                    prefHeight="260" VBox.vgrow="ALWAYS"
+                    style="-fx-font-family:'Courier New'; -fx-font-size:12;"/>
+        </VBox>
       </VBox>
 
     </VBox>
   </center>
   <bottom>
-    <HBox alignment="CENTER_RIGHT" spacing="8">
-      <padding><Insets bottom="10" right="15" top="6"/></padding>
-      <Button text="Volver" onAction="#volver" prefWidth="100" prefHeight="30"/>
+    <HBox alignment="CENTER_RIGHT" spacing="12">
+      <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
+      <Button text="Volver" onAction="#volver" prefWidth="110" prefHeight="36"/>
       <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda"
-              prefWidth="34" prefHeight="34" accessibleText="Ayuda"/>
+              prefWidth="36" prefHeight="36" accessibleText="Ayuda (F1)"/>
     </HBox>
   </bottom>
 </BorderPane>

@@ -4,8 +4,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxWidth="900" maxHeight="620" minWidth="900" minHeight="620"
-            prefWidth="900" prefHeight="620"
+<BorderPane
+            prefWidth="1120" prefHeight="760"
             stylesheets="@../styles/Styles.css"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.damianqm.tarea3adt.controller.LoginController">
@@ -25,9 +25,11 @@
         <Label text="Nombre de usuario:"/>
         <TextField fx:id="txtUsuario" promptText="usuario" prefHeight="36" maxWidth="Infinity"/>
         <Label text="Contrasena:"/>
-        <PasswordField fx:id="pfPassword" promptText="contrasena" prefHeight="36" maxWidth="Infinity"/>
-        <TextField fx:id="tfPasswordVisible" promptText="contrasena" prefHeight="36"
-                   maxWidth="Infinity" visible="false"/>
+        <StackPane>
+          <PasswordField fx:id="pfPassword" promptText="contrasena" prefHeight="36" maxWidth="Infinity"/>
+          <TextField fx:id="tfPasswordVisible" promptText="contrasena" prefHeight="36"
+                     maxWidth="Infinity" visible="false"/>
+        </StackPane>
         <CheckBox fx:id="chkMostrarPassword" onAction="#toggleMostrarPassword"
                   text="Mostrar contrasena"/>
       </VBox>

@@ -8,9 +8,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
+/**
+ * Servicio de espectáculos y números (CU5).
+ * Se encarga de toda la lógica: crear, modificar y eliminar
+ * espectáculos y números, y asignar artistas.
+ */
 @Service
 public class EspectaculoService {
 
@@ -20,232 +27,237 @@ public class EspectaculoService {
     @Autowired private CoordinacionRepository      coordinacionRepository;
     @Autowired private ArtistaRepository           artistaRepository;
 
-    // ─── Consultas básicas ────────────────────────────────────────────
-    public List<Espectaculo> findAll()        { return espectaculoRepository.findAllOrdenados(); }
-    public List<Numero>      findAllNumeros() { return numeroRepository.findAllConArtistas(); }
+    // ─── Consultas ────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<Espectaculo> findAll() {
+        return espectaculoRepository.findAllOrdenados();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Numero> findAllNumeros() {
+        return numeroRepository.findAllConArtistas();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Coordinacion> findAllCoordinadores() {
+        return coordinacionRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Artista> findAllArtistas() {
+        return artistaRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Numero> findNumeroByIdConArtistas(Long id) {
+        return numeroRepository.findByIdConArtistas(id);
+    }
 
     /**
-     * Carga un espectáculo COMPLETO sin duplicados usando 3 queries independientes:
-     *  1. Carga el Espectaculo (coordinador EAGER).
-     *  2. Carga los EspectaculoNumero con Numero (EAGER) ordenados por orden.
-     *  3. Para cada Numero, carga sus artistas con una query DISTINCT.
-     * Al no hacer JOIN FETCH sobre colecciones en una sola query, es
-     * imposible que Hibernate duplique filas en ninguna colección.
+     * Carga un espectáculo con sus números y los artistas de cada número.
+     * Se hace en consultas separadas para no tener duplicados al usar JOIN FETCH.
      */
     @Transactional(readOnly = true)
     public Optional<Espectaculo> findByIdCompleto(Long id) {
         Optional<Espectaculo> opt = espectaculoRepository.findById(id);
-        opt.ifPresent(esp -> {
-            // Query 2: EspectaculoNumero ordenados — Numero es EAGER, se carga automáticamente
+        if (opt.isPresent()) {
+            Espectaculo esp = opt.get();
             List<EspectaculoNumero> relaciones =
                     enRepository.findByEspectaculoIdOrderByOrdenAsc(esp.getId());
-            // Query 3: artistas de cada número, sin duplicados
             for (EspectaculoNumero en : relaciones) {
-                Numero n = en.getNumero();
-                numeroRepository.findByIdConArtistas(n.getId())
-                        .ifPresent(nConArts -> n.setArtistas(nConArts.getArtistas()));
+                Optional<Numero> nConArts = numeroRepository.findByIdConArtistas(en.getNumero().getId());
+                if (nConArts.isPresent()) {
+                    en.getNumero().setArtistas(nConArts.get().getArtistas());
+                }
             }
-            // Poblar la colección del espectáculo con los datos ya cargados
             esp.setNumerosEnEspectaculo(relaciones);
-        });
+        }
         return opt;
     }
 
-    public Optional<Espectaculo> findById(Long id)      { return espectaculoRepository.findById(id); }
-    public Optional<Espectaculo> findByNombre(String n) { return espectaculoRepository.findByNombre(n.trim()); }
+    // ─── Espectáculo (CU5A) ───────────────────────────────────────────
 
-    public List<EspectaculoNumero> findNumerosDeEspectaculo(Long idEsp) {
-        return enRepository.findByEspectaculoIdOrderByOrdenAsc(idEsp);
-    }
-
-    // ─── CU5A: Espectáculo ────────────────────────────────────────────
-
-    /** Valida datos del espectáculo sin persistir nada */
+    /** Valida datos del Paso 1 sin guardar nada. */
     public void validarDatosEspectaculo(String nombre, LocalDate inicio, LocalDate fin,
                                         Long idCoord, Long idExcluir) {
         validarEspectaculo(nombre, inicio, fin, idExcluir);
-        if (idCoord == null)
-            throw new IllegalArgumentException("Debe seleccionar un coordinador.");
-        coordinacionRepository.findById(idCoord)
-                .orElseThrow(() -> new IllegalArgumentException("Coordinador no encontrado."));
+        if (idCoord == null) {
+            throw new IllegalArgumentException("Selecciona un coordinador.");
+        }
+        if (!coordinacionRepository.existsById(idCoord)) {
+            throw new IllegalArgumentException("Coordinador no encontrado.");
+        }
     }
 
     /**
-     * Crea un espectáculo con sus números en una sola transacción.
-     * Solo acepta números ya existentes en la BD (idNumeroExistente != null).
-     * Requiere ≥3 números.
+     * Crea o modifica un espectáculo con sus números.
+     * Si idExistente es null crea uno nuevo, si tiene valor modifica el existente.
      */
     @Transactional
-    public Espectaculo persistirEspectaculoCompleto(
-            String nombre, LocalDate inicio, LocalDate fin,
-            Long idCoord, List<NumeroEnEspectaculo> numerosAsignados,
-            Long idEspExistente) {
+    public Espectaculo persistirEspectaculoCompleto(String nombre, LocalDate inicio, LocalDate fin,
+                                                    Long idCoord, List<NumeroAsignado> numeros,
+                                                    Long idExistente) {
+        validarEspectaculo(nombre, inicio, fin, idExistente);
 
-        validarEspectaculo(nombre, inicio, fin, idEspExistente);
-        if (idCoord == null)
-            throw new IllegalArgumentException("Debe seleccionar un coordinador.");
         Coordinacion coord = coordinacionRepository.findById(idCoord)
                 .orElseThrow(() -> new IllegalArgumentException("Coordinador no encontrado."));
 
-        if (numerosAsignados == null || numerosAsignados.size() < 3)
-            throw new IllegalArgumentException(
-                    "El espectáculo necesita al menos 3 números (tiene " +
-                    (numerosAsignados == null ? 0 : numerosAsignados.size()) + ").");
-
-        // Validar órdenes únicos y que cada número existe
-        Set<Integer> ordenes = new HashSet<>();
-        for (NumeroEnEspectaculo na : numerosAsignados) {
-            validarOrden(na.getOrden());
-            if (!ordenes.add(na.getOrden()))
-                throw new IllegalArgumentException(
-                        "Dos números tienen el mismo orden (" + na.getOrden() + ").");
-            numeroRepository.findById(na.getIdNumero())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Número con id " + na.getIdNumero() + " no encontrado."));
+        if (numeros == null || numeros.size() < 3) {
+            throw new IllegalArgumentException("El espectáculo necesita al menos 3 números.");
         }
 
-        // Crear o recuperar espectáculo
+        // Comprobar que no se repitan órdenes
+        Set<Integer> ordenes = new HashSet<>();
+        for (NumeroAsignado na : numeros) {
+            if (na.getOrden() <= 0) {
+                throw new IllegalArgumentException("El orden debe ser mayor o igual a 1.");
+            }
+            if (!ordenes.add(na.getOrden())) {
+                throw new IllegalArgumentException("Hay dos números con el orden " + na.getOrden() + ".");
+            }
+            if (!numeroRepository.existsById(na.getIdNumero())) {
+                throw new IllegalArgumentException("El número con id " + na.getIdNumero() + " no existe.");
+            }
+        }
+
         Espectaculo esp;
-        if (idEspExistente != null) {
-            esp = espectaculoRepository.findById(idEspExistente)
+        if (idExistente != null) {
+            // Modificación: cargar, vaciar los números existentes y actualizar datos
+            esp = espectaculoRepository.findById(idExistente)
                     .orElseThrow(() -> new IllegalArgumentException("Espectáculo no encontrado."));
             esp.getNumerosEnEspectaculo().clear();
             esp.setNombre(nombre.trim());
             esp.setFechaInicio(inicio);
             esp.setFechaFin(fin);
             esp.setCoordinador(coord);
+            // Con saveAndFlush forzamos que el clear se aplique antes de los insert
             esp = espectaculoRepository.saveAndFlush(esp);
         } else {
             esp = new Espectaculo(nombre.trim(), inicio, fin, coord);
             esp = espectaculoRepository.save(esp);
         }
 
-        // Crear filas en espectaculo_numero
-        for (NumeroEnEspectaculo na : numerosAsignados) {
-            Numero num = numeroRepository.findById(na.getIdNumero()).get();
-            enRepository.save(new EspectaculoNumero(esp, num, na.getOrden()));
+        // Insertar las filas de espectaculo_numero
+        for (NumeroAsignado na : numeros) {
+            Numero n = numeroRepository.findById(na.getIdNumero()).get();
+            enRepository.save(new EspectaculoNumero(esp, n, na.getOrden()));
         }
-
         return esp;
     }
 
-    /**
-     * Elimina un espectáculo y sus relaciones con números
-     * (las filas de espectaculo_numero se eliminan por CASCADE).
-     * Los números en sí NO se eliminan, quedan disponibles en el sistema.
-     */
     @Transactional
-    public void eliminarEspectaculo(Long idEsp) {
-        Espectaculo esp = espectaculoRepository.findById(idEsp)
+    public void eliminarEspectaculo(Long id) {
+        Espectaculo esp = espectaculoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Espectáculo no encontrado."));
         espectaculoRepository.delete(esp);
     }
 
-    // ─── CU5B: Números ────────────────────────────────────────────────
+    // ─── Números (CU5B) ───────────────────────────────────────────────
 
-    /** Crea un número nuevo con sus artistas */
     @Transactional
     public Numero crearNumero(String nombre, double duracion, Set<Long> idsArtistas) {
-        validarNombreNumero(nombre);
-        validarDuracion(duracion);
-        if (idsArtistas == null || idsArtistas.isEmpty())
-            throw new IllegalArgumentException("El número debe tener al menos 1 artista.");
-        if (numeroRepository.existsByNombre(nombre.trim()))
-            throw new IllegalArgumentException("Ya existe un número con el nombre: " + nombre.trim());
-        Set<Artista> artistas = new HashSet<>(artistaRepository.findAllById(idsArtistas));
-        if (artistas.isEmpty())
-            throw new IllegalArgumentException("No se encontraron los artistas seleccionados.");
+        validarNumero(nombre, duracion, idsArtistas);
+        if (numeroRepository.existsByNombre(nombre.trim())) {
+            throw new IllegalArgumentException("Ya existe un número con ese nombre.");
+        }
+
         Numero n = new Numero(nombre.trim(), duracion);
-        n.setArtistas(artistas);
+        n.setArtistas(new HashSet<>(artistaRepository.findAllById(idsArtistas)));
         return numeroRepository.save(n);
     }
 
-    /** Modifica nombre, duración y artistas de un número */
     @Transactional
-    public Numero modificarNumero(Long idNumero, String nombre, double duracion, Set<Long> idsArtistas) {
-        validarNombreNumero(nombre);
-        validarDuracion(duracion);
-        if (idsArtistas == null || idsArtistas.isEmpty())
-            throw new IllegalArgumentException("El número debe tener al menos 1 artista.");
-        Numero n = numeroRepository.findById(idNumero)
+    public Numero modificarNumero(Long id, String nombre, double duracion, Set<Long> idsArtistas) {
+        validarNumero(nombre, duracion, idsArtistas);
+        Numero n = numeroRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Número no encontrado."));
-        // Comprobar nombre único si cambia
-        if (!n.getNombre().equalsIgnoreCase(nombre.trim()) &&
-                numeroRepository.existsByNombre(nombre.trim()))
-            throw new IllegalArgumentException("Ya existe un número con el nombre: " + nombre.trim());
+
+        // Solo comprobar unicidad si el nombre cambia
+        if (!n.getNombre().equalsIgnoreCase(nombre.trim())
+                && numeroRepository.existsByNombre(nombre.trim())) {
+            throw new IllegalArgumentException("Ya existe un número con ese nombre.");
+        }
+
         n.setNombre(nombre.trim());
         n.setDuracion(duracion);
         n.setArtistas(new HashSet<>(artistaRepository.findAllById(idsArtistas)));
         return numeroRepository.save(n);
     }
 
-    /**
-     * Elimina un número del sistema.
-     * Solo se puede eliminar si no está asignado a ningún espectáculo.
-     */
     @Transactional
-    public void eliminarNumero(Long idNumero) {
-        Numero n = numeroRepository.findById(idNumero)
+    public void eliminarNumero(Long id) {
+        Numero n = numeroRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Número no encontrado."));
-        if (enRepository.countByNumeroId(idNumero) > 0)
+        if (enRepository.countByNumeroId(id) > 0) {
             throw new IllegalArgumentException(
-                    "No se puede eliminar el número '" + n.getNombre() +
-                    "' porque está asignado a uno o más espectáculos. " +
-                    "Quítalo primero de los espectáculos correspondientes.");
+                    "El número '" + n.getNombre() + "' está asignado a algún espectáculo. "
+                            + "Quítalo primero de los espectáculos.");
+        }
         numeroRepository.delete(n);
     }
 
-    // ─── Consultas auxiliares ─────────────────────────────────────────
-    public Optional<Numero>   findNumeroById(Long id)              { return numeroRepository.findById(id); }
-    public Optional<Numero>   findNumeroByIdConArtistas(Long id)   { return numeroRepository.findByIdConArtistas(id); }
-    public int                contarNumerosPorEspectaculo(Long id) { return enRepository.countByEspectaculoId(id); }
-    public List<Coordinacion> findAllCoordinadores()               { return coordinacionRepository.findAll(); }
-    public List<Artista>      findAllArtistas()                    { return artistaRepository.findAll(); }
+    // ─── DTO: número con su orden dentro del espectáculo ──────────────
 
-    // ─── DTO: número asignado a espectáculo (solo id + orden) ────────
-    public static class NumeroEnEspectaculo {
+    /**
+     * Clase simple para pasar los números y su orden desde el controlador
+     * al servicio. No es una entidad, solo sirve para agrupar los datos.
+     */
+    public static class NumeroAsignado {
         private final Long idNumero;
-        private final int  orden;
+        private final int orden;
 
-        public NumeroEnEspectaculo(Long idNumero, int orden) {
+        public NumeroAsignado(Long idNumero, int orden) {
             this.idNumero = idNumero;
-            this.orden    = orden;
+            this.orden = orden;
         }
+
         public Long getIdNumero() { return idNumero; }
-        public int  getOrden()    { return orden; }
+        public int getOrden()     { return orden; }
     }
 
-    // ─── Validaciones públicas ────────────────────────────────────────
-    public void validarNombreNumero(String nombre) {
-        if (nombre == null || nombre.isBlank())
-            throw new IllegalArgumentException("El nombre del número es obligatorio.");
-        if (nombre.trim().length() > 100)
-            throw new IllegalArgumentException("El nombre no puede superar 100 caracteres.");
-    }
-    public void validarDuracion(double duracion) {
-        if (duracion <= 0)
-            throw new IllegalArgumentException("La duración debe ser positiva.");
-        double dec = duracion - Math.floor(duracion);
-        if (Math.abs(dec) > 0.01 && Math.abs(dec - 0.5) > 0.01)
-            throw new IllegalArgumentException("La duración solo admite x,0 o x,5 (ej: 3,0 o 2,5).");
-    }
-    public void validarOrden(int orden) {
-        if (orden <= 0) throw new IllegalArgumentException("El orden debe ser ≥ 1.");
-    }
+    // ─── Validaciones ─────────────────────────────────────────────────
 
     private void validarEspectaculo(String nombre, LocalDate inicio, LocalDate fin, Long idExcluir) {
-        if (nombre == null || nombre.isBlank())
+        if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre del espectáculo es obligatorio.");
-        if (nombre.trim().length() > 25)
+        }
+        if (nombre.trim().length() > 25) {
             throw new IllegalArgumentException("El nombre no puede superar 25 caracteres.");
+        }
+        // Comprobar unicidad (dejando pasar el propio espectáculo si se modifica)
         Optional<Espectaculo> ex = espectaculoRepository.findByNombre(nombre.trim());
-        if (ex.isPresent() && !ex.get().getId().equals(idExcluir))
+        if (ex.isPresent() && !ex.get().getId().equals(idExcluir)) {
             throw new IllegalArgumentException("Ya existe un espectáculo con ese nombre.");
-        if (inicio == null) throw new IllegalArgumentException("La fecha de inicio es obligatoria.");
-        if (fin == null)    throw new IllegalArgumentException("La fecha de fin es obligatoria.");
-        if (!fin.isAfter(inicio))
-            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la de inicio.");
-        if (ChronoUnit.DAYS.between(inicio, fin) > 365)
+        }
+        if (inicio == null || fin == null) {
+            throw new IllegalArgumentException("Las fechas de inicio y fin son obligatorias.");
+        }
+        if (!fin.isAfter(inicio)) {
+            throw new IllegalArgumentException("La fecha fin debe ser posterior a la de inicio.");
+        }
+        if (ChronoUnit.DAYS.between(inicio, fin) > 365) {
             throw new IllegalArgumentException("El periodo no puede superar 1 año.");
+        }
+    }
+
+    private void validarNumero(String nombre, double duracion, Set<Long> idsArtistas) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre del número es obligatorio.");
+        }
+        if (nombre.trim().length() > 100) {
+            throw new IllegalArgumentException("El nombre no puede superar 100 caracteres.");
+        }
+        if (duracion <= 0) {
+            throw new IllegalArgumentException("La duración debe ser positiva.");
+        }
+        // Solo admite parte decimal .0 o .5 (con una pequeña tolerancia)
+        double dec = duracion - Math.floor(duracion);
+        if (Math.abs(dec) > 0.01 && Math.abs(dec - 0.5) > 0.01) {
+            throw new IllegalArgumentException("La duración solo admite x,0 o x,5 (ej: 3,0 o 2,5).");
+        }
+        if (idsArtistas == null || idsArtistas.isEmpty()) {
+            throw new IllegalArgumentException("El número debe tener al menos 1 artista.");
+        }
     }
 }

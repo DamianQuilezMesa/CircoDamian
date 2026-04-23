@@ -1,50 +1,44 @@
 package com.damianqm.tarea3adt;
 
+import com.damianqm.tarea3adt.config.StageManager;
+import com.damianqm.tarea3adt.view.FxmlView;
+import javafx.application.Application;
+import javafx.stage.Stage;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import com.damianqm.tarea3adt.config.StageManager;
-import com.damianqm.tarea3adt.view.FxmlView;
-
-import javafx.application.Application;
-import javafx.stage.Stage;
-
+/**
+ * Clase principal. Une Spring Boot y JavaFX.
+ * 1. main() llama a Application.launch().
+ * 2. init() arranca Spring Boot (beans, conexión a BD, ejecuta data.sql).
+ * 3. start() obtiene el StageManager y muestra la pantalla de Bienvenida.
+ */
 @SpringBootApplication
 public class Tarea3AdtApplication extends Application {
 
-	protected ConfigurableApplicationContext springContext;
-	protected StageManager stageManager;
+    private ConfigurableApplicationContext springContext;
+    private StageManager stageManager;
 
-	@Override
-	public void init() throws Exception {
-		springContext = springBootApplicationContext();
-	}
+    public static void main(String[] args) {
+        Application.launch(args);
+    }
 
-	public static void main(final String[] args) {
-		Application.launch(args);
-	}
+    @Override
+    public void init() {
+        String[] args = getParameters().getRaw().toArray(new String[0]);
+        springContext = new SpringApplicationBuilder(Tarea3AdtApplication.class).run(args);
+    }
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
-		stageManager = springContext.getBean(StageManager.class, primaryStage);
-		displayInitialScene();
+    @Override
+    public void start(Stage primaryStage) {
+        // Pedimos el StageManager al contexto pasándole el Stage para que lo gestione
+        stageManager = springContext.getBean(StageManager.class, primaryStage);
+        stageManager.switchScene(FxmlView.BIENVENIDA);
+    }
 
-	}
-
-	/**
-	 * Useful to override this method by sub-classes wishing to change the first
-	 * Scene to be displayed on startup. Example: Functional tests on main window.
-	 */
-	protected void displayInitialScene() {
-		// La primera pantalla es la de Bienvenida (acceso público)
-		stageManager.switchScene(FxmlView.BIENVENIDA);
-	}
-
-	private ConfigurableApplicationContext springBootApplicationContext() {
-		SpringApplicationBuilder builder = new SpringApplicationBuilder(Tarea3AdtApplication.class);
-		String[] args = getParameters().getRaw().stream().toArray(String[]::new);
-		return builder.run(args);
-	}
-
+    @Override
+    public void stop() {
+        springContext.close();
+    }
 }
