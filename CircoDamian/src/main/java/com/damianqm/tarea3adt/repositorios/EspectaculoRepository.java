@@ -11,8 +11,8 @@ import java.util.Optional;
 @Repository
 public interface EspectaculoRepository extends JpaRepository<Espectaculo, Long> {
 
-    Optional<Espectaculo> findByNombre(String nombre);
+	Optional<Espectaculo> findByNombre(String nombre);
 
-    @Query("SELECT e FROM Espectaculo e ORDER BY e.nombre ASC")
-    List<Espectaculo> findAllOrdenados();
+	@Query("SELECT e FROM Espectaculo e ORDER BY e.nombre ASC")
+	List<Espectaculo> findAllOrdenados();
 }

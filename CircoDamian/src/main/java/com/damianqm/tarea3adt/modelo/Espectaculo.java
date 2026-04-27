@@ -26,7 +26,7 @@ public class Espectaculo {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_coordinador", nullable = false)
     private Coordinacion coordinador;
-
+F
     /** Números con su orden. Cascade + orphanRemoval para limpiar la tabla intermedia. */
     @OneToMany(mappedBy = "espectaculo",
                cascade = CascadeType.ALL,

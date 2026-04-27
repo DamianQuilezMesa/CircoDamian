@@ -33,110 +33,113 @@ import java.util.stream.Collectors;
 @Controller
 public class FichaArtistaController implements Initializable {
 
-    @FXML private Label lblNombre;
-    @FXML private Label lblEmail;
-    @FXML private Label lblNacionalidad;
-    @FXML private Label lblApodo;
-    @FXML private Label lblEspecialidades;
-    @FXML private TextArea taTrayectoria;
+	@FXML
+	private Label lblNombre;
+	@FXML
+	private Label lblEmail;
+	@FXML
+	private Label lblNacionalidad;
+	@FXML
+	private Label lblApodo;
+	@FXML
+	private Label lblEspecialidades;
+	@FXML
+	private TextArea taTrayectoria;
 
-    @Autowired private PersonaService personaService;
-    @Autowired private SesionService sesionService;
-    @Autowired private PaisesLoader paisesLoader;
-    @Autowired private EspectaculoNumeroRepository enRepository;
-    @Lazy @Autowired private StageManager stageManager;
+	@Autowired
+	private PersonaService personaService;
+	@Autowired
+	private SesionService sesionService;
+	@Autowired
+	private PaisesLoader paisesLoader;
+	@Autowired
+	private EspectaculoNumeroRepository enRepository;
+	@Lazy
+	@Autowired
+	private StageManager stageManager;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        Long idPersona = sesionService.getUsuarioActual().getPersona().getId();
-        Optional<Artista> artistaOpt = personaService.findArtistaConTrayectoria(idPersona);
-        if (artistaOpt.isPresent()) {
-            cargarFicha(artistaOpt.get());
-        } else {
-            taTrayectoria.setText("No se encontraron datos del artista.");
-        }
-    }
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+		Long idPersona = sesionService.getUsuarioActual().getPersona().getId();
+		Optional<Artista> artistaOpt = personaService.findArtistaConTrayectoria(idPersona);
+		if (artistaOpt.isPresent()) {
+			cargarFicha(artistaOpt.get());
+		} else {
+			taTrayectoria.setText("No se encontraron datos del artista.");
+		}
+	}
 
-    private void cargarFicha(Artista a) {
-        lblNombre.setText(a.getNombre());
-        lblEmail.setText(a.getEmail());
+	private void cargarFicha(Artista a) {
+		lblNombre.setText(a.getNombre());
+		lblEmail.setText(a.getEmail());
 
-        String pais = paisesLoader.getNombrePais(a.getNacionalidad());
-        lblNacionalidad.setText(pais != null ? pais : a.getNacionalidad());
+		String pais = paisesLoader.getNombrePais(a.getNacionalidad());
+		lblNacionalidad.setText(pais != null ? pais : a.getNacionalidad());
 
-        lblApodo.setText(
-                a.getApodo() != null && !a.getApodo().isBlank() ? a.getApodo() : "—");
+		lblApodo.setText(a.getApodo() != null && !a.getApodo().isBlank() ? a.getApodo() : "—");
 
-        String espec = a.getEspecialidades().stream()
-                .map(Enum::name).sorted().collect(Collectors.joining(", "));
-        lblEspecialidades.setText(espec.isEmpty() ? "—" : espec);
+		String espec = a.getEspecialidades().stream().map(Enum::name).sorted().collect(Collectors.joining(", "));
+		lblEspecialidades.setText(espec.isEmpty() ? "—" : espec);
 
-        cargarTrayectoria(a);
-    }
+		cargarTrayectoria(a);
+	}
 
-    /**
-     * Agrupa los números del artista por espectáculo y los muestra en el TextArea.
-     */
-    private void cargarTrayectoria(Artista a) {
-        if (a.getNumeros() == null || a.getNumeros().isEmpty()) {
-            taTrayectoria.setText("Sin participaciones registradas.");
-            return;
-        }
+	/**
+	 * Agrupa los números del artista por espectáculo y los muestra en el TextArea.
+	 */
+	private void cargarTrayectoria(Artista a) {
+		if (a.getNumeros() == null || a.getNumeros().isEmpty()) {
+			taTrayectoria.setText("Sin participaciones registradas.");
+			return;
+		}
 
-        // Ordenar números por nombre y agrupar por espectáculo
-        List<Numero> numerosOrdenados = a.getNumeros().stream()
-                .sorted(Comparator.comparing(Numero::getNombre))
-                .collect(Collectors.toList());
+		// Ordenar números por nombre y agrupar por espectáculo
+		List<Numero> numerosOrdenados = a.getNumeros().stream().sorted(Comparator.comparing(Numero::getNombre))
+				.collect(Collectors.toList());
 
-        Map<String, List<String>> porEspectaculo = new LinkedHashMap<>();
-        for (Numero n : numerosOrdenados) {
-            List<EspectaculoNumero> apariciones = enRepository.findByNumeroId(n.getId());
-            for (EspectaculoNumero en : apariciones) {
-                String clave = "[" + en.getEspectaculo().getId() + "] "
-                        + en.getEspectaculo().getNombre()
-                        + " (" + en.getEspectaculo().getFechaInicio()
-                        + " → " + en.getEspectaculo().getFechaFin() + ")";
-                if (!porEspectaculo.containsKey(clave)) {
-                    porEspectaculo.put(clave, new ArrayList<>());
-                }
-                porEspectaculo.get(clave).add(
-                        en.getOrden() + ". " + n.getNombre()
-                        + "  (" + n.getDuracionFormateada() + " min)");
-            }
-        }
+		Map<String, List<String>> porEspectaculo = new LinkedHashMap<>();
+		for (Numero n : numerosOrdenados) {
+			List<EspectaculoNumero> apariciones = enRepository.findByNumeroId(n.getId());
+			for (EspectaculoNumero en : apariciones) {
+				String clave = "[" + en.getEspectaculo().getId() + "] " + en.getEspectaculo().getNombre() + " ("
+						+ en.getEspectaculo().getFechaInicio() + " → " + en.getEspectaculo().getFechaFin() + ")";
+				if (!porEspectaculo.containsKey(clave)) {
+					porEspectaculo.put(clave, new ArrayList<>());
+				}
+				porEspectaculo.get(clave)
+						.add(en.getOrden() + ". " + n.getNombre() + "  (" + n.getDuracionFormateada() + " min)");
+			}
+		}
 
-        if (porEspectaculo.isEmpty()) {
-            taTrayectoria.setText("Sin participaciones en espectáculos.");
-            return;
-        }
+		if (porEspectaculo.isEmpty()) {
+			taTrayectoria.setText("Sin participaciones en espectáculos.");
+			return;
+		}
 
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, List<String>> entry : porEspectaculo.entrySet()) {
-            sb.append("Espectáculo: ").append(entry.getKey()).append("\n");
-            for (String linea : entry.getValue()) {
-                sb.append("   ").append(linea).append("\n");
-            }
-            sb.append("\n");
-        }
-        taTrayectoria.setText(sb.toString());
-    }
+		StringBuilder sb = new StringBuilder();
+		for (Map.Entry<String, List<String>> entry : porEspectaculo.entrySet()) {
+			sb.append("Espectáculo: ").append(entry.getKey()).append("\n");
+			for (String linea : entry.getValue()) {
+				sb.append("   ").append(linea).append("\n");
+			}
+			sb.append("\n");
+		}
+		taTrayectoria.setText(sb.toString());
+	}
 
-    @FXML
-    private void mostrarAyuda(ActionEvent e) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle("Ayuda – Mi Ficha");
-        a.setHeaderText("Tu ficha en el circo");
-        a.setContentText(
-            "Muestra tu información completa:\n\n" +
-            "• Datos personales: nombre, email, país.\n" +
-            "• Datos profesionales: apodo y especialidades.\n" +
-            "• Trayectoria: espectáculos y números en los que participas."
-        );
-        a.showAndWait();
-    }
+	@FXML
+	private void mostrarAyuda(ActionEvent e) {
+		Alert a = new Alert(Alert.AlertType.INFORMATION);
+		a.setTitle("Ayuda – Mi Ficha");
+		a.setHeaderText("Tu ficha en el circo");
+		a.setContentText("Muestra tu información completa:\n\n" + "• Datos personales: nombre, email, país.\n"
+				+ "• Datos profesionales: apodo y especialidades.\n"
+				+ "• Trayectoria: espectáculos y números en los que participas.");
+		a.showAndWait();
+	}
 
-    @FXML
-    private void volver(ActionEvent e) {
-        stageManager.switchScene(FxmlView.MAIN);
-    }
+	@FXML
+	private void volver(ActionEvent e) {
+		stageManager.switchScene(FxmlView.MAIN);
+	}
 }

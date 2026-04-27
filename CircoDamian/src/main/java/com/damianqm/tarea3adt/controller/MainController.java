@@ -20,85 +20,126 @@ import java.util.ResourceBundle;
 @Controller
 public class MainController implements Initializable {
 
-    @FXML private Label lblBienvenida;
-    @FXML private Label lblPerfil;
+	@FXML
+	private Label lblBienvenida;
+	@FXML
+	private Label lblPerfil;
 
-    @FXML private Button btnVerEspectaculos;
-    @FXML private Button btnBuscarEspectaculo;
-    @FXML private Button btnGestionEspectaculo;
-    @FXML private Button btnGestionNumero;
-    @FXML private Button btnRegistrarPersona;
-    @FXML private Button btnModificarPersona;
-    @FXML private Button btnFichaArtista;
-    @FXML private Button btnLogout;
-    @FXML private Button btnBienvenida;
+	@FXML
+	private Button btnVerEspectaculos;
+	@FXML
+	private Button btnBuscarEspectaculo;
+	@FXML
+	private Button btnGestionEspectaculo;
+	@FXML
+	private Button btnGestionNumero;
+	@FXML
+	private Button btnRegistrarPersona;
+	@FXML
+	private Button btnModificarPersona;
+	@FXML
+	private Button btnFichaArtista;
+	@FXML
+	private Button btnLogout;
+	@FXML
+	private Button btnBienvenida;
 
-    @Autowired private SesionService sesionService;
-    @Lazy @Autowired private StageManager stageManager;
+	@Autowired
+	private SesionService sesionService;
+	@Lazy
+	@Autowired
+	private StageManager stageManager;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        configurarVistaPorPerfil();
-    }
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+		configurarVistaPorPerfil();
+	}
 
-    /** Ajusta textos y botones visibles según el perfil actual. */
-    private void configurarVistaPorPerfil() {
-        boolean autenticado = sesionService.isAutenticado();
+	/** Ajusta textos y botones visibles según el perfil actual. */
+	private void configurarVistaPorPerfil() {
+		boolean autenticado = sesionService.isAutenticado();
 
-        if (autenticado) {
-            lblBienvenida.setText("Bienvenido/a, " +
-                    sesionService.getUsuarioActual().getPersona().getNombre());
-            lblPerfil.setText("Perfil: " + sesionService.getPerfilActual());
-        } else {
-            lblBienvenida.setText("Bienvenido/a al Circo");
-            lblPerfil.setText("Modo invitado");
-        }
+		if (autenticado) {
+			lblBienvenida.setText("Bienvenido/a, " + sesionService.getUsuarioActual().getPersona().getNombre());
+			lblPerfil.setText("Perfil: " + sesionService.getPerfilActual());
+		} else {
+			lblBienvenida.setText("Bienvenido/a al Circo");
+			lblPerfil.setText("Modo invitado");
+		}
 
-        btnVerEspectaculos.setVisible(true);
-        mostrarBoton(btnBuscarEspectaculo,  autenticado);
-        mostrarBoton(btnGestionEspectaculo, sesionService.isCoordinacion());
-        mostrarBoton(btnGestionNumero,      sesionService.isCoordinacion());
-        mostrarBoton(btnRegistrarPersona,   sesionService.isAdmin());
-        mostrarBoton(btnModificarPersona,   sesionService.isAdmin());
-        mostrarBoton(btnFichaArtista,       sesionService.isArtista());
-        mostrarBoton(btnLogout,             autenticado);
-        mostrarBoton(btnBienvenida,         !autenticado);
-    }
+		btnVerEspectaculos.setVisible(true);
+		mostrarBoton(btnBuscarEspectaculo, autenticado);
+		mostrarBoton(btnGestionEspectaculo, sesionService.isCoordinacion());
+		mostrarBoton(btnGestionNumero, sesionService.isCoordinacion());
+		mostrarBoton(btnRegistrarPersona, sesionService.isAdmin());
+		mostrarBoton(btnModificarPersona, sesionService.isAdmin());
+		mostrarBoton(btnFichaArtista, sesionService.isArtista());
+		mostrarBoton(btnLogout, autenticado);
+		mostrarBoton(btnBienvenida, !autenticado);
+	}
 
-    private void mostrarBoton(Button btn, boolean visible) {
-        btn.setVisible(visible);
-        btn.setManaged(visible);
-    }
+	private void mostrarBoton(Button btn, boolean visible) {
+		btn.setVisible(visible);
+		btn.setManaged(visible);
+	}
 
-    @FXML private void irVerEspectaculos(ActionEvent e)    { stageManager.switchScene(FxmlView.VER_ESPECTACULOS); }
-    @FXML private void irBuscarEspectaculo(ActionEvent e)  { stageManager.switchScene(FxmlView.BUSCAR_ESPECTACULO); }
-    @FXML private void irGestionEspectaculo(ActionEvent e) { stageManager.switchScene(FxmlView.GESTION_ESPECTACULO); }
-    @FXML private void irGestionNumero(ActionEvent e)      { stageManager.switchScene(FxmlView.GESTION_NUMERO); }
-    @FXML private void irRegistrarPersona(ActionEvent e)   { stageManager.switchScene(FxmlView.REGISTRO_PERSONA); }
-    @FXML private void irModificarPersona(ActionEvent e)   { stageManager.switchScene(FxmlView.MODIFICAR_PERSONA); }
-    @FXML private void irFichaArtista(ActionEvent e)       { stageManager.switchScene(FxmlView.FICHA_ARTISTA); }
-    @FXML private void irBienvenida(ActionEvent e)         { stageManager.switchScene(FxmlView.BIENVENIDA); }
+	@FXML
+	private void irVerEspectaculos(ActionEvent e) {
+		stageManager.switchScene(FxmlView.VER_ESPECTACULOS);
+	}
 
-    @FXML
-    private void logout(ActionEvent e) {
-        sesionService.logout();
-        stageManager.switchScene(FxmlView.BIENVENIDA);
-    }
+	@FXML
+	private void irBuscarEspectaculo(ActionEvent e) {
+		stageManager.switchScene(FxmlView.BUSCAR_ESPECTACULO);
+	}
 
-    @FXML
-    private void mostrarAyuda(ActionEvent e) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle("Ayuda – Menú Principal");
-        a.setHeaderText("Opciones disponibles según tu perfil");
-        a.setContentText(
-            "• Ver Espectáculos: listado público.\n" +
-            "• Buscar Espectáculo: detalle completo (requiere sesión).\n" +
-            "• Gestionar Espectáculos y Números: Coordinación/Admin.\n" +
-            "• Registrar / Modificar Persona: solo Admin.\n" +
-            "• Ver mi Ficha: solo Artista.\n" +
-            "• Cerrar Sesión: vuelve al modo invitado.\n\n" +
-            "Pulsa F1 para abrir la ayuda en cualquier pantalla."
-        );
-        a.showAndWait();
-    }
+	@FXML
+	private void irGestionEspectaculo(ActionEvent e) {
+		stageManager.switchScene(FxmlView.GESTION_ESPECTACULO);
+	}
+
+	@FXML
+	private void irGestionNumero(ActionEvent e) {
+		stageManager.switchScene(FxmlView.GESTION_NUMERO);
+	}
+
+	@FXML
+	private void irRegistrarPersona(ActionEvent e) {
+		stageManager.switchScene(FxmlView.REGISTRO_PERSONA);
+	}
+
+	@FXML
+	private void irModificarPersona(ActionEvent e) {
+		stageManager.switchScene(FxmlView.MODIFICAR_PERSONA);
+	}
+
+	@FXML
+	private void irFichaArtista(ActionEvent e) {
+		stageManager.switchScene(FxmlView.FICHA_ARTISTA);
+	}
+
+	@FXML
+	private void irBienvenida(ActionEvent e) {
+		stageManager.switchScene(FxmlView.BIENVENIDA);
+	}
+
+	@FXML
+	private void logout(ActionEvent e) {
+		sesionService.logout();
+		stageManager.switchScene(FxmlView.BIENVENIDA);
+	}
+
+	@FXML
+	private void mostrarAyuda(ActionEvent e) {
+		Alert a = new Alert(Alert.AlertType.INFORMATION);
+		a.setTitle("Ayuda – Menú Principal");
+		a.setHeaderText("Opciones disponibles según tu perfil");
+		a.setContentText(
+				"• Ver Espectáculos: listado público.\n" + "• Buscar Espectáculo: detalle completo (requiere sesión).\n"
+						+ "• Gestionar Espectáculos y Números: Coordinación/Admin.\n"
+						+ "• Registrar / Modificar Persona: solo Admin.\n" + "• Ver mi Ficha: solo Artista.\n"
+						+ "• Cerrar Sesión: vuelve al modo invitado.\n\n"
+						+ "Pulsa F1 para abrir la ayuda en cualquier pantalla.");
+		a.showAndWait();
+	}
 }

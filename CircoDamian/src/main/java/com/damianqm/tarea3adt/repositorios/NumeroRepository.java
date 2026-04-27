@@ -12,11 +12,11 @@ import java.util.Optional;
 @Repository
 public interface NumeroRepository extends JpaRepository<Numero, Long> {
 
-    @Query("SELECT DISTINCT n FROM Numero n LEFT JOIN FETCH n.artistas ORDER BY n.nombre ASC")
-    List<Numero> findAllConArtistas();
+	@Query("SELECT DISTINCT n FROM Numero n LEFT JOIN FETCH n.artistas ORDER BY n.nombre ASC")
+	List<Numero> findAllConArtistas();
 
-    @Query("SELECT DISTINCT n FROM Numero n LEFT JOIN FETCH n.artistas WHERE n.id = :id")
-    Optional<Numero> findByIdConArtistas(@Param("id") Long id);
+	@Query("SELECT DISTINCT n FROM Numero n LEFT JOIN FETCH n.artistas WHERE n.id = :id")
+	Optional<Numero> findByIdConArtistas(@Param("id") Long id);
 
-    boolean existsByNombre(String nombre);
+	boolean existsByNombre(String nombre);
 }

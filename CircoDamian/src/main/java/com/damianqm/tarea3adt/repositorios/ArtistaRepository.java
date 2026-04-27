@@ -11,7 +11,9 @@ import java.util.Optional;
 @Repository
 public interface ArtistaRepository extends JpaRepository<Artista, Long> {
 
-    /** Carga el artista con sus números (DISTINCT para evitar duplicados del JOIN). */
-    @Query("SELECT DISTINCT a FROM Artista a LEFT JOIN FETCH a.numeros WHERE a.id = :id")
-    Optional<Artista> findByIdConNumeros(@Param("id") Long id);
+	/**
+	 * Carga el artista con sus números (DISTINCT para evitar duplicados del JOIN).
+	 */
+	@Query("SELECT DISTINCT a FROM Artista a LEFT JOIN FETCH a.numeros WHERE a.id = :id")
+	Optional<Artista> findByIdConNumeros(@Param("id") Long id);
 }
