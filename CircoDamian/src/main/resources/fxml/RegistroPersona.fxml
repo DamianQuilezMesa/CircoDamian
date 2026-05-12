@@ -119,7 +119,6 @@
       <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
       <Button text="Registrar" onAction="#registrar" prefWidth="130" prefHeight="36" styleClass="btnGreen"/>
       <Button text="Volver"    onAction="#volver"    prefWidth="110" prefHeight="36"/>
-      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda" prefWidth="36" prefHeight="36"/>
     </HBox>
   </bottom>
 </BorderPane>

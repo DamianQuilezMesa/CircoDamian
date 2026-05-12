@@ -4,59 +4,83 @@ import com.damianqm.tarea3adt.modelo.Credenciales;
 import com.damianqm.tarea3adt.modelo.Perfil;
 import com.damianqm.tarea3adt.repositorios.CredencialesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-/**
- * Gestiona la sesión del usuario activo. Singleton de Spring, estado
- * compartido.
- */
 @Service
 public class SesionService {
 
 	@Autowired
 	private CredencialesRepository credencialesRepository;
 
+	@Value("${usuarioAdmin}")
+	private String usuarioAdmin;
+
+	@Value("${passwordAdmin}")
+	private String passwordAdmin;
+
 	private Credenciales usuarioActual;
+	private boolean sesionAdmin = false;
 
 	public boolean login(String usuario, String password) {
-		if (usuarioActual != null)
+		if (isAutenticado())
 			return false;
-		Optional<Credenciales> cred = credencialesRepository
-				.findByNombreUsuarioAndPassword(usuario.toLowerCase().trim(), password);
+
+		String u = usuario.toLowerCase().trim();
+
+		if (u.equals(usuarioAdmin.toLowerCase()) && password.equals(passwordAdmin)) {
+			sesionAdmin = true;
+			usuarioActual = null;
+			return true;
+		}
+
+		Optional<Credenciales> cred = credencialesRepository.findByNombreUsuarioAndPassword(u, password);
 		cred.ifPresent(c -> usuarioActual = c);
 		return cred.isPresent();
 	}
 
 	public void logout() {
 		usuarioActual = null;
+		sesionAdmin = false;
 	}
 
 	public boolean isAutenticado() {
-		return usuarioActual != null;
+		return sesionAdmin || usuarioActual != null;
 	}
 
 	public Credenciales getUsuarioActual() {
 		return usuarioActual;
 	}
 
+	public String getNombreUsuarioActual() {
+		if (sesionAdmin)
+			return usuarioAdmin;
+		if (usuarioActual != null)
+			return usuarioActual.getPersona().getNombre();
+		return null;
+	}
+
 	public Perfil getPerfilActual() {
+		if (sesionAdmin)
+			return Perfil.ADMIN;
 		return usuarioActual != null ? usuarioActual.getPerfil() : null;
 	}
 
 	public boolean isAdmin() {
-		return isAutenticado() && usuarioActual.getPerfil() == Perfil.ADMIN;
+		return sesionAdmin;
 	}
 
 	public boolean isArtista() {
-		return isAutenticado() && usuarioActual.getPerfil() == Perfil.ARTISTA;
+		return isAutenticado() && !sesionAdmin && usuarioActual.getPerfil() == Perfil.ARTISTA;
 	}
 
-	/** Admin también puede gestionar como Coordinación. */
+	// El admin puede gestionar espectáculos igual que un coordinador
 	public boolean isCoordinacion() {
-		return isAutenticado()
-				&& (usuarioActual.getPerfil() == Perfil.COORDINACION || usuarioActual.getPerfil() == Perfil.ADMIN);
+		if (sesionAdmin)
+			return true;
+		return isAutenticado() && usuarioActual.getPerfil() == Perfil.COORDINACION;
 	}
 
 	public Optional<String> recuperarPassword(String usuario) {

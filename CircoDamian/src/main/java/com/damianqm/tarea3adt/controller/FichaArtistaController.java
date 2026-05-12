@@ -2,9 +2,8 @@ package com.damianqm.tarea3adt.controller;
 
 import com.damianqm.tarea3adt.config.StageManager;
 import com.damianqm.tarea3adt.modelo.Artista;
-import com.damianqm.tarea3adt.modelo.EspectaculoNumero;
+import com.damianqm.tarea3adt.modelo.Espectaculo;
 import com.damianqm.tarea3adt.modelo.Numero;
-import com.damianqm.tarea3adt.repositorios.EspectaculoNumeroRepository;
 import com.damianqm.tarea3adt.services.PersonaService;
 import com.damianqm.tarea3adt.services.SesionService;
 import com.damianqm.tarea3adt.util.PaisesLoader;
@@ -12,7 +11,6 @@ import com.damianqm.tarea3adt.view.FxmlView;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +18,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /** Ficha del artista autenticado (CU6). */
@@ -52,8 +44,6 @@ public class FichaArtistaController implements Initializable {
 	private SesionService sesionService;
 	@Autowired
 	private PaisesLoader paisesLoader;
-	@Autowired
-	private EspectaculoNumeroRepository enRepository;
 	@Lazy
 	@Autowired
 	private StageManager stageManager;
@@ -61,12 +51,8 @@ public class FichaArtistaController implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		Long idPersona = sesionService.getUsuarioActual().getPersona().getId();
-		Optional<Artista> artistaOpt = personaService.findArtistaConTrayectoria(idPersona);
-		if (artistaOpt.isPresent()) {
-			cargarFicha(artistaOpt.get());
-		} else {
-			taTrayectoria.setText("No se encontraron datos del artista.");
-		}
+		personaService.findArtistaConTrayectoria(idPersona).ifPresentOrElse(this::cargarFicha,
+				() -> taTrayectoria.setText("No se encontraron datos del artista."));
 	}
 
 	private void cargarFicha(Artista a) {
@@ -84,58 +70,44 @@ public class FichaArtistaController implements Initializable {
 		cargarTrayectoria(a);
 	}
 
-	/**
-	 * Agrupa los números del artista por espectáculo y los muestra en el TextArea.
-	 */
 	private void cargarTrayectoria(Artista a) {
 		if (a.getNumeros() == null || a.getNumeros().isEmpty()) {
 			taTrayectoria.setText("Sin participaciones registradas.");
 			return;
 		}
 
-		// Ordenar números por nombre y agrupar por espectáculo
-		List<Numero> numerosOrdenados = a.getNumeros().stream().sorted(Comparator.comparing(Numero::getNombre))
+		Map<Long, List<Numero>> porEspId = new LinkedHashMap<>();
+		Map<Long, Espectaculo> espMap = new LinkedHashMap<>();
+
+		List<Numero> ordenados = a.getNumeros().stream().sorted(Comparator.comparingInt(Numero::getOrden))
 				.collect(Collectors.toList());
 
-		Map<String, List<String>> porEspectaculo = new LinkedHashMap<>();
-		for (Numero n : numerosOrdenados) {
-			List<EspectaculoNumero> apariciones = enRepository.findByNumeroId(n.getId());
-			for (EspectaculoNumero en : apariciones) {
-				String clave = "[" + en.getEspectaculo().getId() + "] " + en.getEspectaculo().getNombre() + " ("
-						+ en.getEspectaculo().getFechaInicio() + " → " + en.getEspectaculo().getFechaFin() + ")";
-				if (!porEspectaculo.containsKey(clave)) {
-					porEspectaculo.put(clave, new ArrayList<>());
-				}
-				porEspectaculo.get(clave)
-						.add(en.getOrden() + ". " + n.getNombre() + "  (" + n.getDuracionFormateada() + " min)");
-			}
+		for (Numero n : ordenados) {
+			Espectaculo esp = n.getEspectaculo();
+			if (esp == null)
+				continue;
+			porEspId.computeIfAbsent(esp.getId(), k -> new ArrayList<>()).add(n);
+			espMap.putIfAbsent(esp.getId(), esp);
 		}
 
-		if (porEspectaculo.isEmpty()) {
+		if (porEspId.isEmpty()) {
 			taTrayectoria.setText("Sin participaciones en espectáculos.");
 			return;
 		}
 
 		StringBuilder sb = new StringBuilder();
-		for (Map.Entry<String, List<String>> entry : porEspectaculo.entrySet()) {
-			sb.append("Espectáculo: ").append(entry.getKey()).append("\n");
-			for (String linea : entry.getValue()) {
-				sb.append("   ").append(linea).append("\n");
+		for (Map.Entry<Long, List<Numero>> entry : porEspId.entrySet()) {
+			Espectaculo esp = espMap.get(entry.getKey());
+			sb.append("Espectáculo: [").append(esp.getId()).append("] ").append(esp.getNombre()).append(" (")
+					.append(esp.getFechaInicio()).append(" → ").append(esp.getFechaFin()).append(")\n");
+
+			for (Numero n : entry.getValue()) {
+				sb.append("   ").append(n.getOrden()).append(". ").append(n.getNombre()).append("  (")
+						.append(n.getDuracionFormateada()).append(" min)\n");
 			}
 			sb.append("\n");
 		}
 		taTrayectoria.setText(sb.toString());
-	}
-
-	@FXML
-	private void mostrarAyuda(ActionEvent e) {
-		Alert a = new Alert(Alert.AlertType.INFORMATION);
-		a.setTitle("Ayuda – Mi Ficha");
-		a.setHeaderText("Tu ficha en el circo");
-		a.setContentText("Muestra tu información completa:\n\n" + "• Datos personales: nombre, email, país.\n"
-				+ "• Datos profesionales: apodo y especialidades.\n"
-				+ "• Trayectoria: espectáculos y números en los que participas.");
-		a.showAndWait();
 	}
 
 	@FXML

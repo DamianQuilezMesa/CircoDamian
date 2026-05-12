@@ -206,19 +206,6 @@ public class RegistroPersonaController implements Initializable {
 	}
 
 	@FXML
-	private void mostrarAyuda(ActionEvent e) {
-		Alert a = new Alert(Alert.AlertType.INFORMATION);
-		a.setTitle("Ayuda – Registrar Persona");
-		a.setHeaderText("¿Cómo registrar una persona?");
-		a.setContentText("Solo el Administrador puede registrar personas.\n\n"
-				+ "1. Rellena nombre, email y nacionalidad.\n" + "2. Elige perfil: Artista o Coordinación.\n"
-				+ "3. Rellena los datos específicos (apodo y especialidades, o senior/fecha).\n"
-				+ "4. Asigna usuario (letras minúsculas, >2 chars) y contraseña (sin espacios, >2 chars).\n"
-				+ "5. Pulsa 'Registrar'.");
-		a.showAndWait();
-	}
-
-	@FXML
 	private void volver(ActionEvent e) {
 		stageManager.switchScene(FxmlView.MAIN);
 	}

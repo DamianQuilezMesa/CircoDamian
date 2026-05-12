@@ -8,11 +8,8 @@ import org.springframework.context.annotation.Lazy;
 
 import java.util.ResourceBundle;
 
-/**
- * Configuración de Spring para integrar JavaFX. El StageManager se marca como
- * Lazy porque el Stage no existe hasta que JavaFX ha arrancado y llama a
- * start().
- */
+// El StageManager es @Lazy porque el Stage todavía no existe cuando Spring
+// arranca; se crea en start() de la clase principal una vez JavaFX está listo.
 @Configuration
 public class AppJavaConfig {
 

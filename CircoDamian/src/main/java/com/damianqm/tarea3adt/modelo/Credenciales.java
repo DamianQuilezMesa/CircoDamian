@@ -2,7 +2,6 @@ package com.damianqm.tarea3adt.modelo;
 
 import jakarta.persistence.*;
 
-/** Credenciales de acceso de una persona. Relación 1:1 con Persona. */
 @Entity
 @Table(name = "credenciales")
 public class Credenciales {
@@ -43,8 +42,8 @@ public class Credenciales {
 		return nombreUsuario;
 	}
 
-	public void setNombreUsuario(String nombreUsuario) {
-		this.nombreUsuario = nombreUsuario;
+	public void setNombreUsuario(String u) {
+		this.nombreUsuario = u;
 	}
 
 	public String getPassword() {

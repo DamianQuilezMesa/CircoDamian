@@ -237,16 +237,6 @@ public class ModificarPersonaController implements Initializable {
 	}
 
 	@FXML
-	private void mostrarAyuda(ActionEvent e) {
-		Alert a = new Alert(Alert.AlertType.INFORMATION);
-		a.setTitle("Ayuda – Modificar Persona");
-		a.setHeaderText("¿Cómo modificar una persona?");
-		a.setContentText("1. Selecciona la persona en el desplegable.\n" + "2. Edita los campos.\n"
-				+ "3. Pulsa 'Guardar cambios'.\n\n" + "Las credenciales no se pueden modificar desde aquí.");
-		a.showAndWait();
-	}
-
-	@FXML
 	private void volver(ActionEvent e) {
 		stageManager.switchScene(FxmlView.MAIN);
 	}

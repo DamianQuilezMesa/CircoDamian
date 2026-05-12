@@ -20,25 +20,26 @@
   <center>
     <VBox spacing="14" alignment="CENTER">
       <padding><Insets top="20" bottom="20" left="100" right="100"/></padding>
-      <Button fx:id="btnVerEspectaculos"    text="Ver Espectaculos"
-              onAction="#irVerEspectaculos"    prefWidth="340" prefHeight="42" mnemonicParsing="true"/>
-      <Button fx:id="btnBuscarEspectaculo"  text="Buscar Espectaculo"
+      <Button fx:id="btnBuscarEspectaculo"  text="_Buscar Espectaculo"
               onAction="#irBuscarEspectaculo"  prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
-      <Button fx:id="btnGestionEspectaculo" text="Gestionar Espectaculos"
+      <Button fx:id="btnGestionEspectaculo" text="_Gestionar Espectaculos"
               onAction="#irGestionEspectaculo" prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
-      <Button fx:id="btnGestionNumero" text="Gestionar Numeros"
-              onAction="#irGestionNumero"       prefWidth="340" prefHeight="42"
+      <Button fx:id="btnGestionNumero"      text="_Gestionar Numeros"
+              onAction="#irGestionNumero"      prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
-      <Button fx:id="btnRegistrarPersona"   text="Registrar Persona"
+      <Button fx:id="btnRegistrarPersona"   text="_Registrar Persona"
               onAction="#irRegistrarPersona"   prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
-      <Button fx:id="btnModificarPersona"   text="Modificar Persona"
+      <Button fx:id="btnModificarPersona"   text="_Modificar Persona"
               onAction="#irModificarPersona"   prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
-      <Button fx:id="btnFichaArtista"       text="Ver mi Ficha"
+      <Button fx:id="btnFichaArtista"       text="Ver mi _Ficha"
               onAction="#irFichaArtista"       prefWidth="340" prefHeight="42"
+              visible="false" managed="false" mnemonicParsing="true"/>
+      <Button fx:id="btnHistorial"          text="_Historial de Operaciones"
+              onAction="#irHistorial"          prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
     </VBox>
   </center>
@@ -49,8 +50,6 @@
               prefWidth="110" prefHeight="34" visible="true"/>
       <Button fx:id="btnLogout" text="Cerrar Sesion" onAction="#logout"
               prefWidth="130" prefHeight="34" visible="false" managed="false"/>
-      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda"
-              prefWidth="34" prefHeight="34" accessibleText="Ayuda"/>
     </HBox>
   </bottom>
 </BorderPane>

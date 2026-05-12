@@ -2,6 +2,7 @@ package com.damianqm.tarea3adt.controller;
 
 import com.damianqm.tarea3adt.config.StageManager;
 import com.damianqm.tarea3adt.modelo.Artista;
+import com.damianqm.tarea3adt.modelo.Espectaculo;
 import com.damianqm.tarea3adt.modelo.Numero;
 import com.damianqm.tarea3adt.services.EspectaculoService;
 import com.damianqm.tarea3adt.services.PersonaService;
@@ -19,28 +20,31 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 
 import java.net.URL;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Gestión de números circenses (CU5B). Permite crear, modificar y eliminar
- * números. Solo se puede eliminar un número si NO está asignado a ningún
- * espectáculo.
+ * Vista auxiliar para consultar y modificar números circenses agrupados por
+ * espectáculo (CU5B — edición rápida de artistas/duración/orden).
+ * <p>
+ * La creación de nuevos números se hace desde
+ * {@link GestionEspectaculoController}. Aquí solo se modifican números ya
+ * existentes.
  */
 @Controller
 public class GestionNumeroController implements Initializable {
+	@FXML
+	private ComboBox<Espectaculo> cbEspectaculo;
 
+	// Selector de número dentro del espectáculo
 	@FXML
 	private ComboBox<Numero> cbNumero;
 	@FXML
 	private TextField txtNombre;
 	@FXML
 	private TextField txtDuracion;
-
+	@FXML
+	private TextField txtOrden;
 	@FXML
 	private ListView<Artista> listArtistas;
 	@FXML
@@ -49,20 +53,16 @@ public class GestionNumeroController implements Initializable {
 	private TableColumn<Artista, String> colNombreArtista;
 	@FXML
 	private TableColumn<Artista, String> colEspecArtista;
-
 	@FXML
 	private Button btnGuardar;
-	@FXML
-	private Button btnEliminar;
-	@FXML
-	private Button btnNuevo;
-
 	@FXML
 	private Label lblMensaje;
 	@FXML
 	private Label lblTitulo;
 
-	/** null = crear nuevo, no null = modificar existente. */
+	/**
+	 * Número en edición (siempre un número existente; null = ninguno seleccionado).
+	 */
 	private Numero numeroEnEdicion = null;
 
 	@Autowired
@@ -75,10 +75,19 @@ public class GestionNumeroController implements Initializable {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
+		configurarComboEspectaculos();
 		configurarComboNumeros();
 		configurarTablaArtistasAsignados();
 		cargarListaArtistas();
-		modoNuevo();
+		limpiarFormulario();
+
+		cbEspectaculo.getSelectionModel().selectedItemProperty().addListener((obs, viejo, nuevo) -> {
+			if (nuevo != null)
+				recargarNumerosEspectaculo(nuevo.getId());
+			else
+				cbNumero.getItems().clear();
+			limpiarFormulario();
+		});
 
 		cbNumero.getSelectionModel().selectedItemProperty().addListener((obs, viejo, nuevo) -> {
 			if (nuevo != null)
@@ -86,44 +95,23 @@ public class GestionNumeroController implements Initializable {
 		});
 	}
 
-	/**
-	 * Carga el número seleccionado en el formulario y preselecciona sus artistas.
-	 */
-	private void cargarNumero(Numero n) {
-		Optional<Numero> completoOpt = espectaculoService.findNumeroByIdConArtistas(n.getId());
-		if (completoOpt.isEmpty())
-			return;
-
-		Numero completo = completoOpt.get();
-		numeroEnEdicion = completo;
-		txtNombre.setText(completo.getNombre());
-		txtDuracion.setText(completo.getDuracionFormateada());
-		tablaArtistasAsignados.setItems(FXCollections.observableArrayList(completo.getArtistas()));
-
-		// Preseleccionar en la lista los artistas del número
-		listArtistas.getSelectionModel().clearSelection();
-		for (Artista a : listArtistas.getItems()) {
-			for (Artista asig : completo.getArtistas()) {
-				if (asig.getId().equals(a.getId())) {
-					listArtistas.getSelectionModel().select(a);
-					break;
-				}
-			}
-		}
-
-		lblTitulo.setText("Modificando número: " + completo.getNombre());
-		btnEliminar.setDisable(false);
-		ok("Número cargado. Modifica los campos y pulsa Guardar.");
-	}
-
+	/** Guarda los cambios sobre el número en edición. */
 	@FXML
 	private void guardar(ActionEvent e) {
+		if (numeroEnEdicion == null) {
+			error("Selecciona un número primero.");
+			return;
+		}
 		if (txtNombre.getText().isBlank()) {
 			error("El nombre es obligatorio.");
 			return;
 		}
 		if (txtDuracion.getText().isBlank()) {
 			error("La duración es obligatoria (ej: 5,0).");
+			return;
+		}
+		if (txtOrden.getText().isBlank()) {
+			error("El orden es obligatorio.");
 			return;
 		}
 
@@ -134,75 +122,91 @@ public class GestionNumeroController implements Initializable {
 		}
 
 		try {
-			// Admite coma o punto como separador decimal
 			double dur = Double.parseDouble(txtDuracion.getText().trim().replace(",", "."));
+			int orden = Integer.parseInt(txtOrden.getText().trim());
 			Set<Long> idsArts = seleccionados.stream().map(Artista::getId).collect(Collectors.toSet());
 
-			if (numeroEnEdicion == null) {
-				Numero creado = espectaculoService.crearNumero(txtNombre.getText().trim(), dur, idsArts);
-				new Alert(Alert.AlertType.INFORMATION, "Número '" + creado.getNombre() + "' creado.", ButtonType.OK)
-						.showAndWait();
-			} else {
-				espectaculoService.modificarNumero(numeroEnEdicion.getId(), txtNombre.getText().trim(), dur, idsArts);
-				new Alert(Alert.AlertType.INFORMATION, "Número actualizado.", ButtonType.OK).showAndWait();
-			}
-			recargarCombo();
-			modoNuevo();
+			espectaculoService.modificarNumero(numeroEnEdicion.getId(), txtNombre.getText().trim(), dur, orden,
+					idsArts);
+
+			new Alert(Alert.AlertType.INFORMATION, "Número actualizado correctamente.", ButtonType.OK).showAndWait();
+
+			Espectaculo espSel = cbEspectaculo.getValue();
+			if (espSel != null)
+				recargarNumerosEspectaculo(espSel.getId());
+			limpiarFormulario();
 		} catch (NumberFormatException ex) {
-			error("Duración inválida. Usa formato x,0 o x,5 (ej: 8,5).");
+			error("Duración u orden inválidos. Usa formato x,0 o x,5 y un entero para el orden.");
 		} catch (IllegalArgumentException ex) {
 			error(ex.getMessage());
 		}
 	}
 
+	/** Limpia el formulario para deseleccionar el número. */
 	@FXML
-	private void eliminar(ActionEvent e) {
-		if (numeroEnEdicion == null) {
-			error("Selecciona un número para eliminar.");
-			return;
-		}
-		Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "¿Eliminar el número '" + numeroEnEdicion.getNombre()
-				+ "'?\n" + "(Solo si no está asignado a ningún espectáculo.)", ButtonType.YES, ButtonType.NO);
-		confirm.setTitle("Confirmar eliminación");
-		Optional<ButtonType> resp = confirm.showAndWait();
-		if (resp.isPresent() && resp.get() == ButtonType.YES) {
-			try {
-				espectaculoService.eliminarNumero(numeroEnEdicion.getId());
-				new Alert(Alert.AlertType.INFORMATION, "Número eliminado.", ButtonType.OK).showAndWait();
-				recargarCombo();
-				modoNuevo();
-			} catch (IllegalArgumentException ex) {
-				error(ex.getMessage());
-			}
-		}
-	}
-
-	@FXML
-	private void nuevo(ActionEvent e) {
+	private void limpiar(ActionEvent e) {
 		cbNumero.getSelectionModel().clearSelection();
-		modoNuevo();
+		limpiarFormulario();
 	}
 
-	/** Limpia el formulario y prepara la pantalla para crear un número nuevo. */
-	private void modoNuevo() {
+	private void cargarNumero(Numero n) {
+		espectaculoService.findNumeroByIdConArtistas(n.getId()).ifPresent(completo -> {
+			numeroEnEdicion = completo;
+			txtNombre.setText(completo.getNombre());
+			txtDuracion.setText(completo.getDuracionFormateada());
+			txtOrden.setText(String.valueOf(completo.getOrden()));
+			tablaArtistasAsignados.setItems(FXCollections.observableArrayList(completo.getArtistas()));
+
+			listArtistas.getSelectionModel().clearSelection();
+			for (Artista a : listArtistas.getItems()) {
+				for (Artista asig : completo.getArtistas()) {
+					if (asig.getId().equals(a.getId())) {
+						listArtistas.getSelectionModel().select(a);
+						break;
+					}
+				}
+			}
+			lblTitulo.setText("Modificando: " + completo.getNombre());
+			ok("Número cargado. Modifica los campos y pulsa Guardar.");
+		});
+	}
+
+	private void limpiarFormulario() {
 		numeroEnEdicion = null;
 		txtNombre.clear();
 		txtDuracion.clear();
+		txtOrden.clear();
 		listArtistas.getSelectionModel().clearSelection();
 		tablaArtistasAsignados.setItems(FXCollections.observableArrayList());
-		lblTitulo.setText("Crear nuevo número");
-		btnEliminar.setDisable(true);
+		lblTitulo.setText("Selecciona un espectáculo y un número");
 		lblMensaje.setText("");
 	}
 
+	private void configurarComboEspectaculos() {
+		cbEspectaculo.setItems(FXCollections.observableArrayList(espectaculoService.findAll()));
+		cbEspectaculo.setConverter(new StringConverter<Espectaculo>() {
+			@Override
+			public String toString(Espectaculo e) {
+				if (e == null)
+					return "";
+				return "[" + e.getId() + "] " + e.getNombre();
+			}
+
+			@Override
+			public Espectaculo fromString(String s) {
+				return null;
+			}
+		});
+		cbEspectaculo.setPromptText("-- Selecciona espectáculo --");
+	}
+
 	private void configurarComboNumeros() {
-		cbNumero.setItems(FXCollections.observableArrayList(espectaculoService.findAllNumeros()));
 		cbNumero.setConverter(new StringConverter<Numero>() {
 			@Override
 			public String toString(Numero n) {
 				if (n == null)
 					return "";
-				return "[" + n.getId() + "] " + n.getNombre() + " (" + n.getDuracionFormateada() + " min)";
+				return "[" + n.getOrden() + "] " + n.getNombre() + " (" + n.getDuracionFormateada() + " min)";
 			}
 
 			@Override
@@ -210,7 +214,12 @@ public class GestionNumeroController implements Initializable {
 				return null;
 			}
 		});
-		cbNumero.setPromptText("-- Selecciona un número para modificar --");
+		cbNumero.setPromptText("-- Selecciona un número --");
+	}
+
+	private void recargarNumerosEspectaculo(Long idEsp) {
+		List<Numero> nums = espectaculoService.findNumerosPorEspectaculo(idEsp);
+		cbNumero.setItems(FXCollections.observableArrayList(nums));
 	}
 
 	private void configurarTablaArtistasAsignados() {
@@ -234,17 +243,10 @@ public class GestionNumeroController implements Initializable {
 					return;
 				}
 				String esp = a.getEspecialidades().stream().map(Enum::name).sorted().collect(Collectors.joining(", "));
-				String apodo = "";
-				if (a.getApodo() != null) {
-					apodo = " \"" + a.getApodo() + "\"";
-				}
+				String apodo = a.getApodo() != null ? " \"" + a.getApodo() + "\"" : "";
 				setText(a.getNombre() + apodo + "  [" + esp + "]");
 			}
 		});
-	}
-
-	private void recargarCombo() {
-		cbNumero.setItems(FXCollections.observableArrayList(espectaculoService.findAllNumeros()));
 	}
 
 	private void error(String m) {
@@ -256,19 +258,6 @@ public class GestionNumeroController implements Initializable {
 	private void ok(String m) {
 		lblMensaje.setStyle("-fx-text-fill:#27ae60;");
 		lblMensaje.setText(m);
-	}
-
-	@FXML
-	private void mostrarAyuda(ActionEvent e) {
-		Alert a = new Alert(Alert.AlertType.INFORMATION);
-		a.setTitle("Ayuda – Gestión de Números");
-		a.setHeaderText("Cómo gestionar números circenses");
-		a.setContentText("CREAR: Rellena nombre, duración (x,0 o x,5) y selecciona artistas\n"
-				+ "  (Ctrl+clic para varios). Pulsa Guardar.\n\n"
-				+ "MODIFICAR: Selecciona el número en el desplegable, edita y Guarda.\n\n"
-				+ "ELIMINAR: Solo es posible si NO está asignado a ningún espectáculo.\n"
-				+ "Si lo está, quítalo primero de los espectáculos.");
-		a.showAndWait();
 	}
 
 	@FXML

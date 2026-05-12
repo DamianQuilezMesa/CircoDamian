@@ -3,7 +3,6 @@ package com.damianqm.tarea3adt.controller;
 import com.damianqm.tarea3adt.config.StageManager;
 import com.damianqm.tarea3adt.modelo.Artista;
 import com.damianqm.tarea3adt.modelo.Espectaculo;
-import com.damianqm.tarea3adt.modelo.EspectaculoNumero;
 import com.damianqm.tarea3adt.modelo.Numero;
 import com.damianqm.tarea3adt.services.EspectaculoService;
 import com.damianqm.tarea3adt.util.PaisesLoader;
@@ -12,10 +11,7 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +19,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 
 import java.net.URL;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -111,20 +106,16 @@ public class BuscarEspectaculoController implements Initializable {
 			lblSenior.setText("");
 		}
 
-		taNumeros.setText(construirTextoNumeros(c.getNumerosEnEspectaculo()));
+		taNumeros.setText(construirTextoNumeros(c.getNumeros()));
 	}
 
-	private String construirTextoNumeros(List<EspectaculoNumero> relaciones) {
-		List<EspectaculoNumero> ordenados = relaciones.stream()
-				.sorted(Comparator.comparingInt(EspectaculoNumero::getOrden)).collect(Collectors.toList());
-
-		if (ordenados.isEmpty())
+	private String construirTextoNumeros(List<Numero> numeros) {
+		if (numeros == null || numeros.isEmpty())
 			return "(Sin números asignados)";
 
 		StringBuilder sb = new StringBuilder();
-		for (EspectaculoNumero en : ordenados) {
-			Numero n = en.getNumero();
-			sb.append(en.getOrden()).append(". ").append(n.getNombre()).append("  (").append(n.getDuracionFormateada())
+		for (Numero n : numeros) {
+			sb.append(n.getOrden()).append(". ").append(n.getNombre()).append("  (").append(n.getDuracionFormateada())
 					.append(" min)\n");
 
 			for (Artista a : n.getArtistas()) {
@@ -135,24 +126,12 @@ public class BuscarEspectaculoController implements Initializable {
 						.collect(Collectors.joining(", "));
 
 				sb.append("   · ").append(a.getNombre());
-				if (a.getApodo() != null && !a.getApodo().isBlank()) {
+				if (a.getApodo() != null && !a.getApodo().isBlank())
 					sb.append(" \"").append(a.getApodo()).append("\"");
-				}
 				sb.append("  |  ").append(pais).append("  |  ").append(especialidades).append("\n");
 			}
 		}
 		return sb.toString();
-	}
-
-	@FXML
-	private void mostrarAyuda(ActionEvent e) {
-		Alert a = new Alert(Alert.AlertType.INFORMATION);
-		a.setTitle("Ayuda – Buscar Espectáculo");
-		a.setHeaderText("Información completa de un espectáculo");
-		a.setContentText("Selecciona un espectáculo del desplegable.\n\n"
-				+ "Se muestra: id, nombre, periodo, coordinador, números ordenados\n"
-				+ "y artistas de cada número con su país y especialidades.");
-		a.showAndWait();
 	}
 
 	@FXML

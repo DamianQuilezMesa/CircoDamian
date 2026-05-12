@@ -2,10 +2,6 @@ package com.damianqm.tarea3adt.modelo;
 
 import jakarta.persistence.*;
 
-/**
- * Clase base de Artista y Coordinacion. Estrategia JOINED: una tabla por
- * subclase unida por id.
- */
 @Entity
 @Table(name = "persona")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -61,8 +57,8 @@ public class Persona {
 		return nacionalidad;
 	}
 
-	public void setNacionalidad(String nacionalidad) {
-		this.nacionalidad = nacionalidad;
+	public void setNacionalidad(String nac) {
+		this.nacionalidad = nac;
 	}
 
 	@Override

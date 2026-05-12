@@ -58,14 +58,6 @@
 .btn-bienvenida-secundario:hover { -fx-background-color: #1a252f; }
 
 /* ── Botón Ayuda ── */
-.btn-ayuda {
-    -fx-background-color: #f39c12;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 16px;
-    -fx-background-radius: 50%;
-}
-.btn-ayuda:hover { -fx-background-color: #d68910; }
 
 /* ── Tablas ── */
 .table-view { -fx-border-color: #cccccc; }

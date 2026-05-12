@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Persona de coordinación. Puede ser senior (con fecha). */
 @Entity
 @Table(name = "coordinacion")
 @PrimaryKeyJoinColumn(name = "id_persona")
@@ -49,7 +48,7 @@ public class Coordinacion extends Persona {
 		return espectaculos;
 	}
 
-	public void setEspectaculos(List<Espectaculo> espectaculos) {
-		this.espectaculos = espectaculos;
+	public void setEspectaculos(List<Espectaculo> e) {
+		this.espectaculos = e;
 	}
 }

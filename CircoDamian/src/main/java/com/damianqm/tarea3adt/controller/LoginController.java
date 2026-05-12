@@ -106,18 +106,6 @@ public class LoginController implements Initializable {
 	}
 
 	@FXML
-	private void mostrarAyuda(ActionEvent event) {
-		Alert ayuda = new Alert(Alert.AlertType.INFORMATION);
-		ayuda.setTitle("Ayuda – Inicio de Sesión");
-		ayuda.setHeaderText("¿Cómo iniciar sesión?");
-		ayuda.setContentText("Introduce tu nombre de usuario y contraseña para acceder.\n\n"
-				+ "• Marca 'Mostrar contraseña' para verla mientras la escribes.\n"
-				+ "• Si la olvidaste, pulsa 'Recuperar contraseña'.\n" + "• Credenciales del admin: admin / admin.\n\n"
-				+ "Pulsa F1 para abrir la ayuda en cualquier pantalla.");
-		ayuda.showAndWait();
-	}
-
-	@FXML
 	private void volverBienvenida(ActionEvent event) {
 		stageManager.switchScene(FxmlView.BIENVENIDA);
 	}

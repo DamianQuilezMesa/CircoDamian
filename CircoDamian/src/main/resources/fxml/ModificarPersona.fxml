@@ -91,7 +91,6 @@
       <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
       <Button text="Guardar cambios" onAction="#guardar"  prefWidth="150" prefHeight="34" styleClass="btnGreen"/>
       <Button text="Volver"          onAction="#volver"   prefWidth="100" prefHeight="34"/>
-      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda" prefWidth="34" prefHeight="34"/>
     </HBox>
   </bottom>
 </BorderPane>

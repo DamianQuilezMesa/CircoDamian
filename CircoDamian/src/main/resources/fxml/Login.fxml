@@ -43,8 +43,6 @@
       <HBox alignment="CENTER_RIGHT">
         <Button text="Volver" onAction="#volverBienvenida" prefWidth="90" prefHeight="30"/>
         <Region HBox.hgrow="NEVER" minWidth="8"/>
-        <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda"
-                prefWidth="34" prefHeight="34" accessibleText="Ayuda"/>
       </HBox>
     </VBox>
   </center>

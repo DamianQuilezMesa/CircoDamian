@@ -9,11 +9,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
-/**
- * Carga los archivos FXML integrándolos con Spring. Los controladores
- * declarados en fx:controller se obtienen del contexto de Spring, así vienen
- * con sus @Autowired ya inyectados.
- */
+// Carga los FXML usando Spring para que los controladores tengan los @Autowired inyectados.
 @Component
 public class SpringFXMLLoader {
 
@@ -26,16 +22,10 @@ public class SpringFXMLLoader {
 		this.resourceBundle = resourceBundle;
 	}
 
-	/** Carga un FXML y devuelve el nodo raíz. */
 	public Parent load(String fxmlPath) throws IOException {
 		return prepararLoader(fxmlPath).load();
 	}
 
-	/**
-	 * Carga un FXML y devuelve el FXMLLoader. Útil para obtener también el
-	 * controller con getController(), necesario por ejemplo para enganchar F1 a su
-	 * método de ayuda.
-	 */
 	public FXMLLoader loadWithLoader(String fxmlPath) throws IOException {
 		FXMLLoader loader = prepararLoader(fxmlPath);
 		loader.load();

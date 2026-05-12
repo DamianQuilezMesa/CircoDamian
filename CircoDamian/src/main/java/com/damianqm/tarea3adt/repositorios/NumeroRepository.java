@@ -12,11 +12,31 @@ import java.util.Optional;
 @Repository
 public interface NumeroRepository extends JpaRepository<Numero, Long> {
 
-	@Query("SELECT DISTINCT n FROM Numero n LEFT JOIN FETCH n.artistas ORDER BY n.nombre ASC")
-	List<Numero> findAllConArtistas();
+	/** Todos los números de un espectáculo ordenados por posición. */
+	List<Numero> findByEspectaculoIdOrderByOrdenAsc(Long idEspectaculo);
 
+	/** Un número concreto con sus artistas ya cargados. */
 	@Query("SELECT DISTINCT n FROM Numero n LEFT JOIN FETCH n.artistas WHERE n.id = :id")
 	Optional<Numero> findByIdConArtistas(@Param("id") Long id);
 
-	boolean existsByNombre(String nombre);
+	/**
+	 * Todos los números de un espectáculo con artistas cargados. Se usa DISTINCT
+	 * para evitar duplicados por el JOIN.
+	 */
+	@Query("SELECT DISTINCT n FROM Numero n LEFT JOIN FETCH n.artistas "
+			+ "WHERE n.espectaculo.id = :idEsp ORDER BY n.orden ASC")
+	List<Numero> findByEspectaculoIdConArtistas(@Param("idEsp") Long idEspectaculo);
+
+	/** Comprueba si ya existe un orden concreto dentro de un espectáculo. */
+	boolean existsByEspectaculoIdAndOrden(Long idEspectaculo, int orden);
+
+	/** Comprueba orden excluyendo un número concreto (útil al modificar). */
+	@Query("SELECT COUNT(n) > 0 FROM Numero n "
+			+ "WHERE n.espectaculo.id = :idEsp AND n.orden = :orden AND n.id <> :idNum")
+	boolean existsByEspectaculoIdAndOrdenExcluyendo(@Param("idEsp") Long idEsp, @Param("orden") int orden,
+			@Param("idNum") Long idNum);
+
+	/** Máximo orden actual en el espectáculo (para sugerir el siguiente). */
+	@Query("SELECT COALESCE(MAX(n.orden), 0) FROM Numero n WHERE n.espectaculo.id = :idEsp")
+	int maxOrdenEnEspectaculo(@Param("idEsp") Long idEspectaculo);
 }

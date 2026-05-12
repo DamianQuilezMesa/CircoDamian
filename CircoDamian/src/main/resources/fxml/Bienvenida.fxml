@@ -38,8 +38,6 @@
   <bottom>
     <HBox alignment="CENTER_RIGHT">
       <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
-      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda"
-              prefWidth="34" prefHeight="34" accessibleText="Ayuda"/>
     </HBox>
   </bottom>
 </BorderPane>

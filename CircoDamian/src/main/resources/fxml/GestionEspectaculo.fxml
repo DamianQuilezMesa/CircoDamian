@@ -5,7 +5,7 @@
 <?import javafx.scene.text.Font?>
 
 <BorderPane
-            prefWidth="1120" prefHeight="760"
+            prefWidth="1180" prefHeight="800"
             stylesheets="@../styles/Styles.css"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.damianqm.tarea3adt.controller.GestionEspectaculoController">
@@ -14,29 +14,23 @@
     <VBox styleClass="background" spacing="4">
       <padding><Insets top="14" left="24" bottom="12" right="24"/></padding>
       <Label text="Gestión de Espectáculos" textFill="WHITE"><font><Font size="18"/></font></Label>
-      <Label text="Crea, modifica o elimina espectáculos. Los números se gestionan en su propia pantalla."
+      <Label text="Paso 1: crea o edita el espectáculo. Paso 2: gestiona sus números directamente."
              textFill="#aaaaaa" style="-fx-font-size:12;" wrapText="true"/>
     </VBox>
   </top>
 
   <center>
-    <SplitPane dividerPositions="0.28">
+    <SplitPane dividerPositions="0.27">
 
-      <!-- ==== IZQUIERDA: selector y acciones ==== -->
+      <!-- ==== IZQUIERDA: selector ==== -->
       <VBox spacing="10" style="-fx-padding:14; -fx-background-color:#f5f5f5;" minWidth="280">
         <Label text="Espectáculos existentes:" style="-fx-font-weight:bold;"/>
         <ComboBox fx:id="cbEspectaculo" maxWidth="Infinity" prefHeight="34"
-                  promptText="-- Selecciona para editar/eliminar --"/>
+                  promptText="-- Selecciona para modificar --"/>
         <Button text="+ Nuevo espectáculo" onAction="#nuevoEspectaculo"
                 maxWidth="Infinity" prefHeight="34"
                 style="-fx-font-weight:bold;"/>
-        <Button text="Eliminar seleccionado" onAction="#eliminarEspectaculo"
-                maxWidth="Infinity" prefHeight="34"
-                style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-font-weight:bold;"/>
         <Separator/>
-        <Button text="Ir a Gestionar Números" onAction="#irGestionNumeros"
-                maxWidth="Infinity" prefHeight="34"
-                style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-font-weight:bold;"/>
         <Label fx:id="lblMensaje" text="" wrapText="true" maxWidth="Infinity"
                style="-fx-font-size:12; -fx-padding:8 0 0 0;"/>
       </VBox>
@@ -74,16 +68,16 @@
 
           <Separator/>
           <HBox spacing="14" alignment="CENTER_LEFT">
-            <Button text="Siguiente →" onAction="#siguiente"
-                    prefWidth="150" prefHeight="38" styleClass="btnGreen"
+            <Button text="Guardar y continuar →" onAction="#siguiente"
+                    prefWidth="200" prefHeight="38" styleClass="btnGreen"
                     style="-fx-font-size:13; -fx-font-weight:bold;"/>
-            <Label text="El espectáculo no se guarda hasta completar los números del Paso 2."
+            <Label text="El espectáculo se guarda al pulsar este botón. Después gestionas sus números."
                    style="-fx-font-size:11; -fx-text-fill:#888;" wrapText="true" maxWidth="400"/>
           </HBox>
         </VBox>
 
-        <!-- ========== PASO 2: asignar números ========== -->
-        <VBox fx:id="panelPaso2" spacing="12" style="-fx-padding:20;"
+        <!-- ========== PASO 2: gestión de números del espectáculo ========== -->
+        <VBox fx:id="panelPaso2" spacing="10" style="-fx-padding:20;"
               visible="false" managed="false">
 
           <Label fx:id="lblEspActual" text=""
@@ -92,41 +86,53 @@
                  style="-fx-font-weight:bold; -fx-text-fill:#e67e22; -fx-font-size:12;"/>
           <Separator/>
 
-          <!-- ===== Añadir número: cuadro destacado ===== -->
-          <VBox spacing="10" style="-fx-background-color:#eef4fb; -fx-background-radius:6; -fx-padding:12; -fx-border-color:#c9dff3; -fx-border-radius:6;">
-            <Label text="Añadir número al espectáculo" style="-fx-font-weight:bold; -fx-font-size:13; -fx-text-fill:#1a1a2e;"/>
+          <!-- ===== Subformulario de número ===== -->
+          <VBox spacing="8" style="-fx-background-color:#eef4fb; -fx-background-radius:6; -fx-padding:14; -fx-border-color:#c9dff3; -fx-border-radius:6;">
+            <Label text="Datos del número" style="-fx-font-weight:bold; -fx-font-size:13; -fx-text-fill:#1a1a2e;"/>
 
             <GridPane hgap="14" vgap="6">
               <columnConstraints>
-                <ColumnConstraints percentWidth="70"/>
-                <ColumnConstraints percentWidth="15" minWidth="80"/>
-                <ColumnConstraints percentWidth="15" minWidth="110"/>
+                <ColumnConstraints percentWidth="45"/>
+                <ColumnConstraints percentWidth="20"/>
+                <ColumnConstraints percentWidth="20"/>
+                <ColumnConstraints percentWidth="15"/>
               </columnConstraints>
 
-              <!-- Fila 0: etiquetas -->
-              <Label text="Número a añadir:" GridPane.columnIndex="0" GridPane.rowIndex="0"
-                     style="-fx-font-size:11; -fx-text-fill:#555;"/>
-              <Label text="Orden:"            GridPane.columnIndex="1" GridPane.rowIndex="0"
-                     style="-fx-font-size:11; -fx-text-fill:#555;"/>
+              <Label text="Nombre:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+              <Label text="Duración (x,0 / x,5):" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+              <Label text="Orden:"  GridPane.columnIndex="2" GridPane.rowIndex="0"/>
 
-              <!-- Fila 1: controles -->
-              <ComboBox fx:id="cbNumero" prefHeight="36" maxWidth="Infinity"
-                        GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-              <TextField fx:id="txtOrden" promptText="1" prefHeight="36" maxWidth="Infinity"
+              <TextField fx:id="txtNombreNum" promptText="Nombre del número"
+                         prefHeight="34" maxWidth="Infinity"
+                         GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+              <TextField fx:id="txtDuracion" promptText="ej: 8,5"
+                         prefHeight="34" maxWidth="Infinity"
                          GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-              <Button fx:id="btnAnadir" text="+ Añadir" onAction="#anadirNumero"
-                      prefHeight="36" maxWidth="Infinity" styleClass="btnGreen"
+              <TextField fx:id="txtOrden" promptText="1"
+                         prefHeight="34" maxWidth="Infinity"
+                         GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+              <Button fx:id="btnGuardarNumero" text="Añadir número" onAction="#guardarNumero"
+                      prefHeight="34" maxWidth="Infinity" styleClass="btnGreen"
                       style="-fx-font-weight:bold;"
-                      GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                      GridPane.columnIndex="3" GridPane.rowIndex="1"/>
             </GridPane>
+
+            <Label text="Artistas participantes (selección múltiple):"
+                   style="-fx-font-size:11; -fx-text-fill:#555;"/>
+            <ListView fx:id="listArtistas" prefHeight="110"/>
+
+            <HBox spacing="8">
+              <Button text="Limpiar formulario" onAction="#nuevoNumero"
+                      prefHeight="30" style="-fx-font-size:11;"/>
+            </HBox>
           </VBox>
 
-          <!-- ===== Tabla de números del espectáculo ===== -->
-          <Label text="Números asignados (mínimo 3):" style="-fx-font-weight:bold;"/>
-          <TableView fx:id="tablaAsignados" VBox.vgrow="ALWAYS" prefHeight="260">
+          <!-- ===== Tabla de números ya en el espectáculo ===== -->
+          <Label text="Números del espectáculo (mínimo 3):" style="-fx-font-weight:bold;"/>
+          <TableView fx:id="tablaNumeros" VBox.vgrow="ALWAYS" prefHeight="220">
             <columns>
               <TableColumn fx:id="colOrden"    text="#"        prefWidth="50"  minWidth="40"/>
-              <TableColumn fx:id="colNombre"   text="Número"   prefWidth="220" minWidth="160"/>
+              <TableColumn fx:id="colNombre"   text="Número"   prefWidth="200" minWidth="140"/>
               <TableColumn fx:id="colDuracion" text="Duración" prefWidth="100" minWidth="80"/>
               <TableColumn fx:id="colArtistas" text="Artistas" prefWidth="350" minWidth="200"/>
             </columns>
@@ -136,7 +142,10 @@
           </TableView>
 
           <HBox spacing="10" alignment="CENTER_LEFT">
-            <Button fx:id="btnQuitar" text="− Quitar seleccionado" onAction="#quitarNumero"
+            <Button text="✎ Editar seleccionado" onAction="#editarNumero"
+                    prefHeight="32" prefWidth="180"
+                    style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-font-weight:bold;"/>
+            <Button text="✕ Eliminar seleccionado" onAction="#eliminarNumero"
                     prefHeight="32" prefWidth="190"
                     style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-font-weight:bold;"/>
           </HBox>
@@ -145,10 +154,6 @@
           <HBox spacing="12" alignment="CENTER_LEFT">
             <Button text="← Volver al Paso 1" onAction="#volverPaso1"
                     prefHeight="36" prefWidth="160"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button fx:id="btnGuardar" text="✓ Guardar espectáculo" onAction="#guardar"
-                    prefHeight="36" prefWidth="210" styleClass="btnGreen"
-                    style="-fx-font-size:13; -fx-font-weight:bold;" disable="true"/>
           </HBox>
         </VBox>
 
@@ -161,8 +166,6 @@
       <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
       <Button text="Volver al menú" onAction="#volver"
               prefWidth="140" prefHeight="36"/>
-      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda"
-              prefWidth="36" prefHeight="36" accessibleText="Ayuda"/>
     </HBox>
   </bottom>
 </BorderPane>

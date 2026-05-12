@@ -13,6 +13,6 @@ public interface EspectaculoRepository extends JpaRepository<Espectaculo, Long> 
 
 	Optional<Espectaculo> findByNombre(String nombre);
 
-	@Query("SELECT e FROM Espectaculo e ORDER BY e.nombre ASC")
+	@Query("SELECT e FROM Espectaculo e ORDER BY e.id ASC")
 	List<Espectaculo> findAllOrdenados();
 }

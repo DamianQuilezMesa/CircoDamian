@@ -61,8 +61,6 @@
     <HBox alignment="CENTER_RIGHT" spacing="8">
       <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
       <Button text="Volver" onAction="#volver" prefWidth="110" prefHeight="36"/>
-      <Button text="?" onAction="#mostrarAyuda" styleClass="btn-ayuda"
-              prefWidth="34" prefHeight="34" accessibleText="Ayuda"/>
     </HBox>
   </bottom>
 </BorderPane>

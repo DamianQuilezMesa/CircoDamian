@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Artista del circo. Tiene apodo opcional y una o más especialidades. */
 @Entity
 @Table(name = "artista")
 @PrimaryKeyJoinColumn(name = "id_persona")
@@ -44,8 +43,8 @@ public class Artista extends Persona {
 		return especialidades;
 	}
 
-	public void setEspecialidades(Set<Especialidad> especialidades) {
-		this.especialidades = especialidades;
+	public void setEspecialidades(Set<Especialidad> e) {
+		this.especialidades = e;
 	}
 
 	public Set<Numero> getNumeros() {

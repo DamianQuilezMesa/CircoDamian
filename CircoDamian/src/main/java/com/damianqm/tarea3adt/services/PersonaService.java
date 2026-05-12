@@ -1,6 +1,7 @@
 package com.damianqm.tarea3adt.services;
 
 import com.damianqm.tarea3adt.modelo.*;
+import com.damianqm.tarea3adt.modelo.db4o.TipoOperacion;
 import com.damianqm.tarea3adt.repositorios.*;
 import com.damianqm.tarea3adt.util.PaisesLoader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-/** Servicio de personas (CU3): registro, modificación y consultas. */
 @Service
 public class PersonaService {
 
@@ -26,8 +26,10 @@ public class PersonaService {
 	private CoordinacionRepository coordinacionRepository;
 	@Autowired
 	private PaisesLoader paisesLoader;
-
-	// ─── Registro ─────────────────────────────────────────────────────
+	@Autowired
+	private SesionService sesionService;
+	@Autowired
+	private LogService logService;
 
 	@Transactional
 	public Artista registrarArtista(String nombre, String email, String nacionalidad, String apodo,
@@ -40,6 +42,8 @@ public class PersonaService {
 				especialidades);
 		a = artistaRepository.save(a);
 		credencialesRepository.save(new Credenciales(usuario.toLowerCase().trim(), password, Perfil.ARTISTA, a));
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
+				TipoOperacion.NUEVO, "Se ha insertado un nuevo Artista de id " + a.getId());
 		return a;
 	}
 
@@ -54,10 +58,10 @@ public class PersonaService {
 				senior, fechaSenior);
 		c = coordinacionRepository.save(c);
 		credencialesRepository.save(new Credenciales(usuario.toLowerCase().trim(), password, Perfil.COORDINACION, c));
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
+				TipoOperacion.NUEVO, "Se ha insertado una nueva Coordinacion de id " + c.getId());
 		return c;
 	}
-
-	// ─── Modificación ─────────────────────────────────────────────────
 
 	@Transactional
 	public Persona modificarDatosPersonales(Long id, String nombre, String email, String nacionalidad) {
@@ -70,7 +74,10 @@ public class PersonaService {
 		p.setNombre(nombre.trim());
 		p.setEmail(email.trim().toLowerCase());
 		p.setNacionalidad(nacionalidad.trim().toUpperCase());
-		return personaRepository.save(p);
+		Persona saved = personaRepository.save(p);
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
+				TipoOperacion.ACTUALIZACION, "Se ha actualizado la informacion del id " + saved.getId() + " de Persona");
+		return saved;
 	}
 
 	@Transactional
@@ -80,7 +87,10 @@ public class PersonaService {
 		validarEspecialidades(especialidades);
 		a.setApodo(apodo != null && !apodo.isBlank() ? apodo.trim() : null);
 		a.setEspecialidades(especialidades);
-		return artistaRepository.save(a);
+		Artista saved = artistaRepository.save(a);
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
+				TipoOperacion.ACTUALIZACION, "Se ha actualizado la informacion del id " + saved.getId() + " de Artista");
+		return saved;
 	}
 
 	@Transactional
@@ -90,7 +100,10 @@ public class PersonaService {
 		validarSenior(senior, fechaSenior);
 		c.setSenior(senior);
 		c.setFechaSenior(senior ? fechaSenior : null);
-		return coordinacionRepository.save(c);
+		Coordinacion saved = coordinacionRepository.save(c);
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
+				TipoOperacion.ACTUALIZACION, "Se ha actualizado la informacion del id " + saved.getId() + " de Coordinacion");
+		return saved;
 	}
 
 	@Transactional(readOnly = true)
