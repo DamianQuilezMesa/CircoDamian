@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefWidth="1120" prefHeight="760"
+            stylesheets="@../styles/Styles.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.damianqm.tarea3adt.controller.ConsultarIncidenciasController">
+  <top>
+    <VBox styleClass="background" spacing="4">
+      <padding><Insets top="14" left="24" bottom="12" right="24"/></padding>
+      <Label text="Consultar Incidencias" textFill="WHITE"><font><Font size="18"/></font></Label>
+      <Label text="Filtra y consulta las incidencias registradas en el circo."
+             textFill="#aaaaaa" style="-fx-font-size:12;"/>
+    </VBox>
+  </top>
+
+  <center>
+    <VBox spacing="12" style="-fx-padding:20;">
+
+      <!-- Panel de filtros -->
+      <TitledPane text="Filtros" collapsible="false">
+        <GridPane hgap="16" vgap="10">
+          <padding><Insets top="10" left="10" bottom="10" right="10"/></padding>
+          <columnConstraints>
+            <ColumnConstraints percentWidth="25"/>
+            <ColumnConstraints percentWidth="25"/>
+            <ColumnConstraints percentWidth="25"/>
+            <ColumnConstraints percentWidth="25"/>
+          </columnConstraints>
+
+          <Label text="Tipo:"        GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+          <Label text="Estado:"      GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+          <Label text="Espectáculo:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+          <Label text="Número:"      GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+          <ComboBox fx:id="cbTipo"        prefHeight="32" maxWidth="Infinity"
+                    GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+          <ComboBox fx:id="cbEstado"      prefHeight="32" maxWidth="Infinity"
+                    GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+          <ComboBox fx:id="cbEspectaculo" prefHeight="32" maxWidth="Infinity"
+                    GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+          <ComboBox fx:id="cbNumero"      prefHeight="32" maxWidth="Infinity"
+                    GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+          <Label text="Desde:"  GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+          <Label text="Hasta:"  GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+          <DatePicker fx:id="dpDesde" prefHeight="32" maxWidth="Infinity"
+                      GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+          <DatePicker fx:id="dpHasta" prefHeight="32" maxWidth="Infinity"
+                      GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        </GridPane>
+      </TitledPane>
+
+      <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Buscar" onAction="#buscar" prefWidth="110" prefHeight="34"
+                styleClass="btnGreen" style="-fx-font-weight:bold;"/>
+        <Button text="Limpiar filtros" onAction="#limpiar" prefWidth="130" prefHeight="34"/>
+        <Label fx:id="lblResultados" text="" style="-fx-text-fill:#555; -fx-font-size:12;"/>
+      </HBox>
+
+      <Label fx:id="lblMensaje" text="" wrapText="true"/>
+
+      <!-- Tabla -->
+      <TableView fx:id="tablaIncidencias" VBox.vgrow="ALWAYS">
+        <columns>
+          <TableColumn fx:id="colId"     text="ID"     prefWidth="55"/>
+          <TableColumn fx:id="colFecha"  text="Fecha"  prefWidth="130"/>
+          <TableColumn fx:id="colTipo"   text="Tipo"   prefWidth="110"/>
+          <TableColumn fx:id="colEstado" text="Estado" prefWidth="100"/>
+          <TableColumn fx:id="colEsp"    text="Esp.ID" prefWidth="65"/>
+          <TableColumn fx:id="colNum"    text="Num.ID" prefWidth="65"/>
+          <TableColumn fx:id="colDesc"   text="Descripción" prefWidth="450"/>
+        </columns>
+        <columnResizePolicy>
+          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+        <placeholder><Label text="Sin resultados. Aplica los filtros y pulsa Buscar."/></placeholder>
+      </TableView>
+    </VBox>
+  </center>
+
+  <bottom>
+    <HBox alignment="CENTER_RIGHT">
+      <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
+      <Button text="Volver al menú" onAction="#volver" prefWidth="140" prefHeight="36"/>
+    </HBox>
+  </bottom>
+</BorderPane>

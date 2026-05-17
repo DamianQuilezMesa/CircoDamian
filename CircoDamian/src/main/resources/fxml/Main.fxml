@@ -4,8 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane
-            prefWidth="1120" prefHeight="760"
+<BorderPane prefWidth="1120" prefHeight="760"
             stylesheets="@../styles/Styles.css"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.damianqm.tarea3adt.controller.MainController">
@@ -20,26 +19,48 @@
   <center>
     <VBox spacing="14" alignment="CENTER">
       <padding><Insets top="20" bottom="20" left="100" right="100"/></padding>
+
+      <!-- Espectáculos -->
       <Button fx:id="btnBuscarEspectaculo"  text="_Buscar Espectaculo"
               onAction="#irBuscarEspectaculo"  prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
+
+      <!-- Gestión (Coordinación y Admin) -->
       <Button fx:id="btnGestionEspectaculo" text="_Gestionar Espectaculos"
               onAction="#irGestionEspectaculo" prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
       <Button fx:id="btnGestionNumero"      text="_Gestionar Numeros"
               onAction="#irGestionNumero"      prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
+
+      <!-- Admin -->
       <Button fx:id="btnRegistrarPersona"   text="_Registrar Persona"
               onAction="#irRegistrarPersona"   prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
       <Button fx:id="btnModificarPersona"   text="_Modificar Persona"
               onAction="#irModificarPersona"   prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
+      <Button fx:id="btnHistorial"          text="_Historial de Operaciones"
+              onAction="#irHistorial"          prefWidth="340" prefHeight="42"
+              visible="false" managed="false" mnemonicParsing="true"/>
+
+      <!-- Artista -->
       <Button fx:id="btnFichaArtista"       text="Ver mi _Ficha"
               onAction="#irFichaArtista"       prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
-      <Button fx:id="btnHistorial"          text="_Historial de Operaciones"
-              onAction="#irHistorial"          prefWidth="340" prefHeight="42"
+
+      <!-- Incidencias (todos los autenticados) -->
+      <Separator prefWidth="340" visible="false" fx:id="sepIncidencias" managed="false"/>
+      <Button fx:id="btnRegistrarIncidencia"  text="Registrar _Incidencia"
+              onAction="#irRegistrarIncidencia"  prefWidth="340" prefHeight="42"
+              visible="false" managed="false" mnemonicParsing="true"/>
+      <Button fx:id="btnConsultarIncidencias" text="_Consultar Incidencias"
+              onAction="#irConsultarIncidencias" prefWidth="340" prefHeight="42"
+              visible="false" managed="false" mnemonicParsing="true"/>
+
+      <!-- Coordinación y Admin -->
+      <Button fx:id="btnResolverIncidencia"   text="Resolver _Incidencia"
+              onAction="#irResolverIncidencia"   prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
     </VBox>
   </center>
