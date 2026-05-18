@@ -35,8 +35,13 @@ public class IncidenciaService {
 		return incidenciaRepository.guardar(inc);
 	}
 
-	// CU9 – Resolver incidencia
+	// CU9 – Resolver incidencia (solo Coordinación y Administrador)
 	public void resolver(Long idIncidencia, String accionesRealizadas) {
+		// PT4-12: acceso restringido
+		if (!sesionService.isCoordinacion()) {
+			throw new IllegalStateException(
+					"Acceso denegado. Solo Coordinación o Administrador pueden resolver incidencias.");
+		}
 		if (accionesRealizadas == null || accionesRealizadas.isBlank())
 			throw new IllegalArgumentException("Describe las acciones realizadas para resolver la incidencia.");
 

@@ -42,8 +42,8 @@ public class PersonaService {
 				especialidades);
 		a = artistaRepository.save(a);
 		credencialesRepository.save(new Credenciales(usuario.toLowerCase().trim(), password, Perfil.ARTISTA, a));
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-				TipoOperacion.NUEVO, "Se ha insertado un nuevo Artista de id " + a.getId());
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.NUEVO,
+				"Se ha insertado un nuevo Artista de id " + a.getId());
 		return a;
 	}
 
@@ -58,8 +58,8 @@ public class PersonaService {
 				senior, fechaSenior);
 		c = coordinacionRepository.save(c);
 		credencialesRepository.save(new Credenciales(usuario.toLowerCase().trim(), password, Perfil.COORDINACION, c));
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-				TipoOperacion.NUEVO, "Se ha insertado una nueva Coordinacion de id " + c.getId());
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.NUEVO,
+				"Se ha insertado una nueva Coordinacion de id " + c.getId());
 		return c;
 	}
 
@@ -75,8 +75,8 @@ public class PersonaService {
 		p.setEmail(email.trim().toLowerCase());
 		p.setNacionalidad(nacionalidad.trim().toUpperCase());
 		Persona saved = personaRepository.save(p);
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-				TipoOperacion.ACTUALIZACION, "Se ha actualizado la informacion del id " + saved.getId() + " de Persona");
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.ACTUALIZACION,
+				"Se ha actualizado la informacion del id " + saved.getId() + " de Persona");
 		return saved;
 	}
 
@@ -88,8 +88,8 @@ public class PersonaService {
 		a.setApodo(apodo != null && !apodo.isBlank() ? apodo.trim() : null);
 		a.setEspecialidades(especialidades);
 		Artista saved = artistaRepository.save(a);
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-				TipoOperacion.ACTUALIZACION, "Se ha actualizado la informacion del id " + saved.getId() + " de Artista");
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.ACTUALIZACION,
+				"Se ha actualizado la informacion del id " + saved.getId() + " de Artista");
 		return saved;
 	}
 
@@ -101,8 +101,8 @@ public class PersonaService {
 		c.setSenior(senior);
 		c.setFechaSenior(senior ? fechaSenior : null);
 		Coordinacion saved = coordinacionRepository.save(c);
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-				TipoOperacion.ACTUALIZACION, "Se ha actualizado la informacion del id " + saved.getId() + " de Coordinacion");
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.ACTUALIZACION,
+				"Se ha actualizado la informacion del id " + saved.getId() + " de Coordinacion");
 		return saved;
 	}
 

@@ -43,7 +43,7 @@ public class MainController implements Initializable {
 	@FXML
 	private Button btnBienvenida;
 
-	// Incidencias (Tarea 4 - Parte II)
+	// Incidencias (Tarea 4 - Parte 2)
 	@FXML
 	private Separator sepIncidencias;
 	@FXML

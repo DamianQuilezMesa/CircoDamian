@@ -8,125 +8,88 @@ import com.damianqm.tarea3adt.modelo.db4o.LogOperacion;
 import com.damianqm.tarea3adt.modelo.db4o.TipoOperacion;
 import org.springframework.stereotype.Repository;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
+import java.io.File;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
-/**
- * Repositorio para operaciones CRUD sobre DB4O (base de datos embebida).
- * Gestiona el historial de operaciones del sistema (CU7 y CU10).
- */
 @Repository
 public class LogDb4oRepository {
 
     private static final String DB_PATH = "ficheros/log.db4o";
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
-    private ObjectContainer db;
-    private final AtomicLong idCounter = new AtomicLong(1);
-
-    @PostConstruct
-    public void init() {
-        db = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), DB_PATH);
-        // Inicializar el contador de id con el máximo existente
-        List<LogOperacion> todos = obtenerTodos();
-        long maxId = todos.stream()
-                .filter(l -> l.getId() != null)
-                .mapToLong(LogOperacion::getId)
-                .max()
-                .orElse(0L);
-        idCounter.set(maxId + 1);
+    public LogDb4oRepository() {
+        new File("ficheros").mkdirs();
     }
 
-    @PreDestroy
-    public void cerrar() {
-        if (db != null && !db.ext().isClosed()) {
+    private ObjectContainer abrirDb() {
+        return Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), DB_PATH);
+    }
+
+    // CU7 – Guardar log
+    public void guardar(LogOperacion log) {
+        ObjectContainer db = abrirDb();
+        try {
+            if (log.getId() == null) {
+                long siguiente = db.query(LogOperacion.class).size() + 1L;
+                log.setId(siguiente);
+            }
+            db.store(log);
+            db.commit();
+        } finally {
             db.close();
         }
     }
 
-    /**
-     * CU7 – Guarda un nuevo LogOperacion en DB4O de forma transaccional.
-     */
-    public void guardar(LogOperacion log) {
-        log.setId(idCounter.getAndIncrement());
+    // CU10 – Native Query (todos los campos son String, sin problemas de módulos)
+    public List<LogOperacion> consultar(String usuario, Set<TipoOperacion> tipos,
+            LocalDateTime desde, LocalDateTime hasta) {
+
+        final String u          = (usuario != null) ? usuario.trim() : "";
+        final String desdeStr   = desde != null ? desde.format(FMT) : null;
+        final String hastaStr   = hasta != null ? hasta.format(FMT) : null;
+        final Set<String> tiposStr = tipos != null
+                ? tipos.stream().map(TipoOperacion::name).collect(Collectors.toSet())
+                : null;
+        final boolean filtrarTipos = tiposStr != null && !tiposStr.isEmpty();
+
+        ObjectContainer db = abrirDb();
         try {
-            db.store(log);
-            db.commit();
-        } catch (Exception e) {
-            db.rollback();
-            throw new RuntimeException("Error al guardar el log en DB4O", e);
+            ObjectSet<LogOperacion> result = db.query(new Predicate<LogOperacion>() {
+                @Override
+                public boolean match(LogOperacion log) {
+                    if (!u.isEmpty() && !u.equalsIgnoreCase(log.getUsuario()))
+                        return false;
+                    if (filtrarTipos && !tiposStr.contains(log.getTipoOperacion()))
+                        return false;
+                    if (desdeStr != null && log.getFechaHoraStr() != null
+                            && log.getFechaHoraStr().compareTo(desdeStr) < 0)
+                        return false;
+                    if (hastaStr != null && log.getFechaHoraStr() != null
+                            && log.getFechaHoraStr().compareTo(hastaStr) > 0)
+                        return false;
+                    return true;
+                }
+            });
+            return new ArrayList<>(result);
+        } finally {
+            db.close();
         }
     }
 
-    /**
-     * CU10 – Consulta el historial con filtros combinados usando Native Query.
-     *
-     * @param usuario        Nombre de usuario exacto (obligatorio, no nulo ni vacío).
-     * @param tipos          Conjunto de TipoOperacion a incluir; null o vacío = todos.
-     * @param desde          Fecha/hora de inicio del rango (inclusive); null = sin límite inferior.
-     * @param hasta          Fecha/hora de fin del rango (inclusive); null = sin límite superior.
-     * @return Lista de LogOperacion que cumplen los criterios.
-     */
-    public List<LogOperacion> consultar(String usuario,
-                                        Set<TipoOperacion> tipos,
-                                        LocalDateTime desde,
-                                        LocalDateTime hasta) {
-
-        final String usuarioFiltro = (usuario != null) ? usuario.trim() : "";
-        final boolean filtrarTipos = tipos != null && !tipos.isEmpty();
-
-        // Native Query de DB4O
-        ObjectSet<LogOperacion> result = db.query(new Predicate<LogOperacion>() {
-            @Override
-            public boolean match(LogOperacion log) {
-                // Filtro por usuario (obligatorio)
-                if (!usuarioFiltro.isEmpty() &&
-                    !usuarioFiltro.equalsIgnoreCase(log.getUsuario())) {
-                    return false;
-                }
-                // Filtro por tipo de operación
-                if (filtrarTipos && !tipos.contains(log.getTipoOperacion())) {
-                    return false;
-                }
-                // Filtro por fecha inicio
-                if (desde != null && log.getFechaHora() != null &&
-                    log.getFechaHora().isBefore(desde)) {
-                    return false;
-                }
-                // Filtro por fecha fin
-                if (hasta != null && log.getFechaHora() != null &&
-                    log.getFechaHora().isAfter(hasta)) {
-                    return false;
-                }
-                return true;
-            }
-        });
-
-        return new ArrayList<>(result);
-    }
-
-    /**
-     * Devuelve todos los registros (útil para inicializar el contador de IDs).
-     */
-    private List<LogOperacion> obtenerTodos() {
-        ObjectSet<LogOperacion> result = db.query(LogOperacion.class);
-        return new ArrayList<>(result);
-    }
-
-    /**
-     * Devuelve lista de nombres de usuario distintos que tienen registros de log.
-     * Útil para autocompletar el campo usuario en la pantalla CU10.
-     */
     public List<String> obtenerUsuariosDistintos() {
-        return obtenerTodos().stream()
-                .map(LogOperacion::getUsuario)
-                .filter(u -> u != null && !u.isBlank())
-                .distinct()
-                .sorted()
-                .toList();
+        ObjectContainer db = abrirDb();
+        try {
+            return db.query(LogOperacion.class).stream()
+                    .map(LogOperacion::getUsuario)
+                    .filter(u -> u != null && !u.isBlank())
+                    .distinct().sorted().toList();
+        } finally {
+            db.close();
+        }
     }
 }

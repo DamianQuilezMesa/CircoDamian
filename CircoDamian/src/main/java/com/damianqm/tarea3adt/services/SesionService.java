@@ -56,9 +56,13 @@ public class SesionService {
 
 	// Devuelve el id de la persona autenticada. Para el admin (sin Credenciales)
 	// devuelve 0.
+	/**
+	 * Devuelve el id de la persona autenticada.
+	 * Para el administrador del sistema (sin persona en BD) devuelve -1L.
+	 */
 	public Long getIdPersonaActual() {
 		if (sesionAdmin)
-			return 0L;
+			return -1L;   // admin del sistema, no tiene persona en BD
 		if (usuarioActual != null)
 			return usuarioActual.getPersona().getId();
 		return null;

@@ -5,10 +5,12 @@ import com.damianqm.tarea3adt.view.FxmlView;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
+@EntityScan("com.damianqm.tarea3adt.modelo")  // solo entidades JPA/MySQL; excluye modelo.objectdb
 public class Tarea3AdtApplication extends Application {
 
 	private ConfigurableApplicationContext springContext;

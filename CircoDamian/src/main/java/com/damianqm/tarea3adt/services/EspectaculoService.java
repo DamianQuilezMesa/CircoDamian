@@ -92,13 +92,13 @@ public class EspectaculoService {
 			esp.setFechaFin(fin);
 			esp.setCoordinador(coord);
 			Espectaculo saved = espectaculoRepository.save(esp);
-			logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-					TipoOperacion.ACTUALIZACION, "Se ha actualizado la informacion del id " + saved.getId() + " de Espectaculo");
+			logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.ACTUALIZACION,
+					"Se ha actualizado la informacion del id " + saved.getId() + " de Espectaculo");
 			return saved;
 		} else {
 			Espectaculo saved = espectaculoRepository.save(new Espectaculo(nombre.trim(), inicio, fin, coord));
-			logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-					TipoOperacion.NUEVO, "Se ha insertado un nuevo Espectaculo de id " + saved.getId());
+			logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.NUEVO,
+					"Se ha insertado un nuevo Espectaculo de id " + saved.getId());
 			return saved;
 		}
 	}
@@ -114,8 +114,8 @@ public class EspectaculoService {
 		Numero n = new Numero(nombre.trim(), duracion, orden, esp);
 		n.setArtistas(new HashSet<>(artistaRepository.findAllById(idsArtistas)));
 		Numero saved = numeroRepository.save(n);
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-				TipoOperacion.NUEVO, "Se ha insertado un nuevo Numero de id " + saved.getId());
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.NUEVO,
+				"Se ha insertado un nuevo Numero de id " + saved.getId());
 		return saved;
 	}
 
@@ -133,8 +133,8 @@ public class EspectaculoService {
 		n.setOrden(orden);
 		n.setArtistas(new HashSet<>(artistaRepository.findAllById(idsArtistas)));
 		Numero saved = numeroRepository.save(n);
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-				TipoOperacion.ACTUALIZACION, "Se ha actualizado la informacion del id " + saved.getId() + " de Numero");
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.ACTUALIZACION,
+				"Se ha actualizado la informacion del id " + saved.getId() + " de Numero");
 		return saved;
 	}
 
@@ -145,8 +145,8 @@ public class EspectaculoService {
 		long total = numeroRepository.findByEspectaculoIdOrderByOrdenAsc(n.getEspectaculo().getId()).size();
 		if (total <= 3)
 			throw new IllegalArgumentException("No se puede eliminar: el espectáculo necesita al menos 3 números.");
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(),
-				TipoOperacion.BORRADO, "Se ha borrado el Numero de id " + idNumero);
+		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.BORRADO,
+				"Se ha borrado el Numero de id " + idNumero);
 		numeroRepository.delete(n);
 	}
 

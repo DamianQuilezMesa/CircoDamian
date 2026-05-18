@@ -4,82 +4,122 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 /**
- * Entidad persistida en ObjectDB (servidor).
- * Representa una incidencia técnica, artística u organizativa del circo.
+ * Entidad persistida en ObjectDB (servidor). Representa una incidencia técnica,
+ * artística u organizativa del circo.
  */
 @Entity
 public class Incidencia {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    /** Fecha y hora en que se registra la incidencia (automático). */
-    private LocalDateTime fechaHora;
+	/** Fecha y hora en que se registra la incidencia (automático). */
+	private LocalDateTime fechaHora;
 
-    /** Tipo de incidencia. */
-    @Enumerated(EnumType.STRING)
-    private TipoIncidencia tipo;
+	/** Tipo de incidencia. */
+	@Enumerated(EnumType.STRING)
+	private TipoIncidencia tipo;
 
-    /** Descripción abierta, hasta 1000 caracteres. */
-    @Column(length = 1000)
-    private String descripcion;
+	/** Descripción abierta, hasta 1000 caracteres. */
+	@Column(length = 1000)
+	private String descripcion;
 
-    /** Indica si la incidencia está resuelta. Por defecto false. */
-    private boolean resuelta = false;
+	/** Indica si la incidencia está resuelta. Por defecto false. */
+	private boolean resuelta = false;
 
-    /** Id de la persona que reporta la incidencia (obligatorio). */
-    @Column(nullable = false)
-    private Long idPersonaReporta;
+	/** Id de la persona que reporta la incidencia (obligatorio). */
+	@Column(nullable = false)
+	private Long idPersonaReporta;
 
-    /** Id del espectáculo afectado (opcional). */
-    private Long idEspectaculo;
+	/** Id del espectáculo afectado (opcional). */
+	private Long idEspectaculo;
 
-    /** Id del número circense afectado (opcional). */
-    private Long idNumero;
+	/** Id del número circense afectado (opcional). */
+	private Long idNumero;
 
-    public Incidencia() {
-    }
+	public Incidencia() {
+	}
 
-    public Incidencia(TipoIncidencia tipo, String descripcion, Long idPersonaReporta,
-                      Long idEspectaculo, Long idNumero) {
-        this.fechaHora = LocalDateTime.now();
-        this.tipo = tipo;
-        this.descripcion = descripcion;
-        this.idPersonaReporta = idPersonaReporta;
-        this.idEspectaculo = idEspectaculo;
-        this.idNumero = idNumero;
-        this.resuelta = false;
-    }
+	public Incidencia(TipoIncidencia tipo, String descripcion, Long idPersonaReporta, Long idEspectaculo,
+			Long idNumero) {
+		this.fechaHora = LocalDateTime.now();
+		this.tipo = tipo;
+		this.descripcion = descripcion;
+		this.idPersonaReporta = idPersonaReporta;
+		this.idEspectaculo = idEspectaculo;
+		this.idNumero = idNumero;
+		this.resuelta = false;
+	}
 
-    // ── Getters / Setters ────────────────────────────────
+	// ── Getters / Setters ────────────────────────────────
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+	public Long getId() {
+		return id;
+	}
 
-    public LocalDateTime getFechaHora() { return fechaHora; }
-    public void setFechaHora(LocalDateTime fechaHora) { this.fechaHora = fechaHora; }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public TipoIncidencia getTipo() { return tipo; }
-    public void setTipo(TipoIncidencia tipo) { this.tipo = tipo; }
+	public LocalDateTime getFechaHora() {
+		return fechaHora;
+	}
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+	public void setFechaHora(LocalDateTime fechaHora) {
+		this.fechaHora = fechaHora;
+	}
 
-    public boolean isResuelta() { return resuelta; }
-    public void setResuelta(boolean resuelta) { this.resuelta = resuelta; }
+	public TipoIncidencia getTipo() {
+		return tipo;
+	}
 
-    public Long getIdPersonaReporta() { return idPersonaReporta; }
-    public void setIdPersonaReporta(Long idPersonaReporta) { this.idPersonaReporta = idPersonaReporta; }
+	public void setTipo(TipoIncidencia tipo) {
+		this.tipo = tipo;
+	}
 
-    public Long getIdEspectaculo() { return idEspectaculo; }
-    public void setIdEspectaculo(Long idEspectaculo) { this.idEspectaculo = idEspectaculo; }
+	public String getDescripcion() {
+		return descripcion;
+	}
 
-    public Long getIdNumero() { return idNumero; }
-    public void setIdNumero(Long idNumero) { this.idNumero = idNumero; }
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
+	}
 
-    @Override
-    public String toString() {
-        return "[" + id + "] " + tipo + " - " + (resuelta ? "RESUELTA" : "PENDIENTE") + " - " + descripcion;
-    }
+	public boolean isResuelta() {
+		return resuelta;
+	}
+
+	public void setResuelta(boolean resuelta) {
+		this.resuelta = resuelta;
+	}
+
+	public Long getIdPersonaReporta() {
+		return idPersonaReporta;
+	}
+
+	public void setIdPersonaReporta(Long idPersonaReporta) {
+		this.idPersonaReporta = idPersonaReporta;
+	}
+
+	public Long getIdEspectaculo() {
+		return idEspectaculo;
+	}
+
+	public void setIdEspectaculo(Long idEspectaculo) {
+		this.idEspectaculo = idEspectaculo;
+	}
+
+	public Long getIdNumero() {
+		return idNumero;
+	}
+
+	public void setIdNumero(Long idNumero) {
+		this.idNumero = idNumero;
+	}
+
+	@Override
+	public String toString() {
+		return "[" + id + "] " + tipo + " - " + (resuelta ? "RESUELTA" : "PENDIENTE") + " - " + descripcion;
+	}
 }

@@ -26,109 +26,133 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
- * Ver espectáculos (CU1 y CU4).
- * Invitado: solo datos básicos (id, nombre, periodo).
- * Autenticado: además coordinador, números y artistas.
+ * Ver espectáculos (CU1 y CU4). Invitado: solo datos básicos (id, nombre,
+ * periodo). Autenticado: además coordinador, números y artistas.
  */
 @Controller
 public class VerEspectaculosController implements Initializable {
 
-    @FXML private ComboBox<Espectaculo> cbEspectaculo;
-    @FXML private Label    lblId;
-    @FXML private Label    lblNombre;
-    @FXML private Label    lblPeriodo;
+	@FXML
+	private ComboBox<Espectaculo> cbEspectaculo;
+	@FXML
+	private Label lblId;
+	@FXML
+	private Label lblNombre;
+	@FXML
+	private Label lblPeriodo;
 
-    @FXML private VBox     panelDetallCompleto;
-    @FXML private VBox     panelInfoCompleta;
+	@FXML
+	private VBox panelDetallCompleto;
+	@FXML
+	private VBox panelInfoCompleta;
 
-    @FXML private Label    lblCoordinador;
-    @FXML private Label    lblSenior;
-    @FXML private TextArea taNumeros;
-    @FXML private Label    lblSinSeleccion;
+	@FXML
+	private Label lblCoordinador;
+	@FXML
+	private Label lblSenior;
+	@FXML
+	private TextArea taNumeros;
+	@FXML
+	private Label lblSinSeleccion;
 
-    @Autowired private EspectaculoService espectaculoService;
-    @Autowired private SesionService      sesionService;
-    @Autowired private PaisesLoader       paisesLoader;
-    @Lazy @Autowired private StageManager stageManager;
+	@Autowired
+	private EspectaculoService espectaculoService;
+	@Autowired
+	private SesionService sesionService;
+	@Autowired
+	private PaisesLoader paisesLoader;
+	@Lazy
+	@Autowired
+	private StageManager stageManager;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        cbEspectaculo.setItems(FXCollections.observableArrayList(espectaculoService.findAll()));
-        cbEspectaculo.setConverter(new StringConverter<Espectaculo>() {
-            @Override public String toString(Espectaculo e) {
-                if (e == null) return "";
-                return "[" + e.getId() + "] " + e.getNombre()
-                        + "  (" + e.getFechaInicio() + " → " + e.getFechaFin() + ")";
-            }
-            @Override public Espectaculo fromString(String s) { return null; }
-        });
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+		cbEspectaculo.setItems(FXCollections.observableArrayList(espectaculoService.findAll()));
+		cbEspectaculo.setConverter(new StringConverter<Espectaculo>() {
+			@Override
+			public String toString(Espectaculo e) {
+				if (e == null)
+					return "";
+				return "[" + e.getId() + "] " + e.getNombre() + "  (" + e.getFechaInicio() + " → " + e.getFechaFin()
+						+ ")";
+			}
 
-        panelDetallCompleto.setVisible(false);
-        panelDetallCompleto.setManaged(false);
-        lblSinSeleccion.setVisible(true);
+			@Override
+			public Espectaculo fromString(String s) {
+				return null;
+			}
+		});
 
-        boolean autenticado = sesionService.isAutenticado();
-        panelInfoCompleta.setVisible(autenticado);
-        panelInfoCompleta.setManaged(autenticado);
+		panelDetallCompleto.setVisible(false);
+		panelDetallCompleto.setManaged(false);
+		lblSinSeleccion.setVisible(true);
 
-        cbEspectaculo.getSelectionModel().selectedItemProperty()
-                .addListener((obs, viejo, nuevo) -> { if (nuevo != null) mostrarDetalle(nuevo); });
-    }
+		boolean autenticado = sesionService.isAutenticado();
+		panelInfoCompleta.setVisible(autenticado);
+		panelInfoCompleta.setManaged(autenticado);
 
-    private void mostrarDetalle(Espectaculo esp) {
-        lblSinSeleccion.setVisible(false);
-        panelDetallCompleto.setVisible(true);
-        panelDetallCompleto.setManaged(true);
+		cbEspectaculo.getSelectionModel().selectedItemProperty().addListener((obs, viejo, nuevo) -> {
+			if (nuevo != null)
+				mostrarDetalle(nuevo);
+		});
+	}
 
+	private void mostrarDetalle(Espectaculo esp) {
+		lblSinSeleccion.setVisible(false);
+		panelDetallCompleto.setVisible(true);
+		panelDetallCompleto.setManaged(true);
 
-        lblId.setText(String.valueOf(esp.getId()));
-        lblNombre.setText(esp.getNombre());
-        lblPeriodo.setText(esp.getFechaInicio() + "  →  " + esp.getFechaFin());
+		lblId.setText(String.valueOf(esp.getId()));
+		lblNombre.setText(esp.getNombre());
+		lblPeriodo.setText(esp.getFechaInicio() + "  →  " + esp.getFechaFin());
 
-        if (!sesionService.isAutenticado()) return;
+		if (!sesionService.isAutenticado())
+			return;
 
+		Optional<Espectaculo> completo = espectaculoService.findByIdCompleto(esp.getId());
+		if (completo.isEmpty())
+			return;
 
-        Optional<Espectaculo> completo = espectaculoService.findByIdCompleto(esp.getId());
-        if (completo.isEmpty()) return;
+		Espectaculo c = completo.get();
+		lblCoordinador.setText(c.getCoordinador().getNombre() + "  |  " + c.getCoordinador().getEmail());
 
-        Espectaculo c = completo.get();
-        lblCoordinador.setText(c.getCoordinador().getNombre() + "  |  " + c.getCoordinador().getEmail());
+		if (c.getCoordinador().isSenior()) {
+			lblSenior.setText("(Senior)");
+			lblSenior.setStyle("-fx-font-weight:bold; -fx-text-fill:#1a7f37;");
+		} else {
+			lblSenior.setText("");
+		}
 
-        if (c.getCoordinador().isSenior()) {
-            lblSenior.setText("(Senior)");
-            lblSenior.setStyle("-fx-font-weight:bold; -fx-text-fill:#1a7f37;");
-        } else {
-            lblSenior.setText("");
-        }
+		taNumeros.setText(construirTextoNumeros(c.getNumeros()));
+	}
 
-        taNumeros.setText(construirTextoNumeros(c.getNumeros()));
-    }
+	private String construirTextoNumeros(List<Numero> numeros) {
+		if (numeros == null || numeros.isEmpty())
+			return "(Sin números asignados)";
 
-    private String construirTextoNumeros(List<Numero> numeros) {
-        if (numeros == null || numeros.isEmpty()) return "(Sin números asignados)";
+		StringBuilder sb = new StringBuilder();
+		for (Numero n : numeros) {
+			sb.append(n.getOrden()).append(". ").append(n.getNombre()).append("  (").append(n.getDuracionFormateada())
+					.append(" min)\n");
 
-        StringBuilder sb = new StringBuilder();
-        for (Numero n : numeros) {
-            sb.append(n.getOrden()).append(". ").append(n.getNombre())
-              .append("  (").append(n.getDuracionFormateada()).append(" min)\n");
+			for (Artista a : n.getArtistas()) {
+				String pais = paisesLoader.getNombrePais(a.getNacionalidad());
+				if (pais == null)
+					pais = a.getNacionalidad();
+				String especialidades = a.getEspecialidades().stream().map(Enum::name).sorted()
+						.collect(Collectors.joining(", "));
 
-            for (Artista a : n.getArtistas()) {
-                String pais = paisesLoader.getNombrePais(a.getNacionalidad());
-                if (pais == null) pais = a.getNacionalidad();
-                String especialidades = a.getEspecialidades().stream()
-                        .map(Enum::name).sorted().collect(Collectors.joining(", "));
+				sb.append("   · ").append(a.getNombre());
+				if (a.getApodo() != null && !a.getApodo().isBlank())
+					sb.append(" \"").append(a.getApodo()).append("\"");
+				sb.append("  |  ").append(pais).append("  |  ").append(especialidades).append("\n");
+			}
+		}
+		return sb.toString();
+	}
 
-                sb.append("   · ").append(a.getNombre());
-                if (a.getApodo() != null && !a.getApodo().isBlank())
-                    sb.append(" \"").append(a.getApodo()).append("\"");
-                sb.append("  |  ").append(pais).append("  |  ").append(especialidades).append("\n");
-            }
-        }
-        return sb.toString();
-    }
-
-    @FXML
-    private void volver(ActionEvent e) {
-        stageManager.switchScene(sesionService.isAutenticado() ? FxmlView.MAIN : FxmlView.BIENVENIDA);
-    }
+	@FXML
+	private void volver(ActionEvent e) {
+		stageManager.switchScene(sesionService.isAutenticado() ? FxmlView.MAIN : FxmlView.BIENVENIDA);
+	}
 }
