@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefWidth="1120" prefHeight="760"
+            stylesheets="@../styles/Styles.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.damianqm.tarea3adt.controller.RegistrarIncidenciaController">
+  <top>
+    <VBox styleClass="background" spacing="4">
+      <padding><Insets top="14" left="24" bottom="12" right="24"/></padding>
+      <Label text="Registrar Incidencia" textFill="WHITE"><font><Font size="18"/></font></Label>
+      <Label text="Informa de una incidencia técnica, artística u organizativa."
+             textFill="#aaaaaa" style="-fx-font-size:12;"/>
+    </VBox>
+  </top>
+
+  <center>
+    <VBox spacing="18" style="-fx-padding:30;">
+
+      <GridPane hgap="20" vgap="14">
+        <columnConstraints>
+          <ColumnConstraints percentWidth="35"/>
+          <ColumnConstraints percentWidth="65"/>
+        </columnConstraints>
+
+        <Label text="Tipo de incidencia *:" style="-fx-font-weight:bold;"
+               GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <ComboBox fx:id="cbTipo" prefHeight="34" maxWidth="Infinity"
+                  GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+        <Label text="Descripción * (máx. 1000 car.):" style="-fx-font-weight:bold;"
+               GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
+          <TextArea fx:id="taDescripcion" prefHeight="130" wrapText="true"
+                    promptText="Describe la incidencia con el máximo detalle posible..."/>
+          <Label fx:id="lblContador" text="0 / 1000" style="-fx-text-fill:#888; -fx-font-size:11;"/>
+        </VBox>
+
+        <Label text="Espectáculo afectado (opcional):" style="-fx-font-weight:bold;"
+               GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <ComboBox fx:id="cbEspectaculo" prefHeight="34" maxWidth="Infinity"
+                  GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+        <Label text="Número afectado (opcional):" style="-fx-font-weight:bold;"
+               GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <ComboBox fx:id="cbNumero" prefHeight="34" maxWidth="Infinity"
+                  GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+      </GridPane>
+
+      <Label fx:id="lblMensaje" text="" wrapText="true"/>
+
+      <HBox spacing="12">
+        <Button text="Guardar incidencia" onAction="#guardar"
+                prefWidth="180" prefHeight="36" styleClass="btnGreen"
+                style="-fx-font-weight:bold;"/>
+        <Button text="Limpiar" onAction="#limpiar"
+                prefWidth="100" prefHeight="36"/>
+      </HBox>
+    </VBox>
+  </center>
+
+  <bottom>
+    <HBox alignment="CENTER_RIGHT">
+      <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
+      <Button text="Volver al menú" onAction="#volver" prefWidth="140" prefHeight="36"/>
+    </HBox>
+  </bottom>
+</BorderPane>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane
+    prefWidth="950" prefHeight="680"
+    stylesheets="@../styles/Styles.css"
+    xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.damianqm.tarea3adt.controller.HistorialController">
+
+  <top>
+    <VBox styleClass="background" spacing="4">
+      <padding><Insets top="16" left="28" bottom="12" right="28"/></padding>
+      <Label text="HISTORIAL DE OPERACIONES" style="-fx-font-size:22; -fx-font-weight:bold;" textFill="WHITE"/>
+      <Label text="Consulta de auditoría (solo Administrador)" textFill="#cccccc">
+        <font><Font size="12"/></font>
+      </Label>
+    </VBox>
+  </top>
+
+  <center>
+    <VBox spacing="12">
+      <padding><Insets top="18" left="28" right="28" bottom="10"/></padding>
+
+      <!-- Filtros -->
+      <TitledPane text="Filtros de búsqueda" collapsible="false">
+        <GridPane hgap="12" vgap="10">
+          <padding><Insets top="12" left="14" right="14" bottom="12"/></padding>
+
+          <Label text="Usuario *:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+          <ComboBox fx:id="cbUsuario" promptText="-- Selecciona un usuario --"
+                    prefWidth="240"
+                    GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+          <Label text="Tipo operación:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+          <HBox spacing="14" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <CheckBox fx:id="chkNuevo"         text="NUEVO"/>
+            <CheckBox fx:id="chkActualizacion" text="ACTUALIZACIÓN"/>
+            <CheckBox fx:id="chkBorrado"       text="BORRADO"/>
+          </HBox>
+
+          <Label text="Fecha desde:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+          <DatePicker fx:id="dpDesde" promptText="dd/mm/aaaa"
+                      GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+          <Label text="Fecha hasta:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+          <DatePicker fx:id="dpHasta" promptText="dd/mm/aaaa"
+                      GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+          <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <Button text="Buscar" onAction="#buscar" prefWidth="100" prefHeight="32"
+                    style="-fx-font-weight:bold;"/>
+            <Button text="Limpiar" onAction="#limpiar" prefWidth="100" prefHeight="32"/>
+          </HBox>
+        </GridPane>
+      </TitledPane>
+
+      <!-- Mensajes -->
+      <Label fx:id="lblError"      style="-fx-text-fill:#c0392b; -fx-font-weight:bold;"/>
+      <Label fx:id="lblResultados" style="-fx-text-fill:#27ae60;"/>
+
+      <!-- Tabla resultados -->
+      <TableView fx:id="tablaHistorial" VBox.vgrow="ALWAYS">
+        <columns>
+          <TableColumn fx:id="colId"        text="ID"         prefWidth="50"/>
+          <TableColumn fx:id="colFechaHora" text="Fecha/Hora" prefWidth="140"/>
+          <TableColumn fx:id="colUsuario"   text="Usuario"    prefWidth="120"/>
+          <TableColumn fx:id="colTipo"      text="Tipo"       prefWidth="120"/>
+          <TableColumn fx:id="colResumen"   text="Resumen"    prefWidth="380"/>
+        </columns>
+        <placeholder><Label text="Sin resultados. Aplica los filtros y pulsa Buscar."/></placeholder>
+      </TableView>
+    </VBox>
+  </center>
+
+  <bottom>
+    <HBox alignment="CENTER_RIGHT">
+      <padding><Insets bottom="14" right="24" top="10"/></padding>
+      <Button text="Volver al Menú" onAction="#volver" prefWidth="150" prefHeight="34"/>
+    </HBox>
+  </bottom>
+</BorderPane>

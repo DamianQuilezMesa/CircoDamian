@@ -63,7 +63,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+		
 		<!-- ObjectDB Jakarta (instalado en repositorio local con mvn install:install-file) -->
 		<dependency>
 			<groupId>com.objectdb</groupId>
@@ -71,7 +71,7 @@
 			<version>2.9.5</version>
 		</dependency>
 	</dependencies>
-
+	
 	<build>
 		<plugins>
 			<plugin>
