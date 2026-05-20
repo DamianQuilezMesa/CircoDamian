@@ -136,17 +136,6 @@ public enum FxmlView {
 			return "/fxml/RegistrarIncidencia.fxml";
 		}
 	},
-	RESOLVER_INCIDENCIA {
-		@Override
-		public String getTitle() {
-			return getTexto("incidencia.resolver.title");
-		}
-
-		@Override
-		public String getFxmlFile() {
-			return "/fxml/ResolverIncidencia.fxml";
-		}
-	},
 	CONSULTAR_INCIDENCIAS {
 		@Override
 		public String getTitle() {

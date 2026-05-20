@@ -11,10 +11,11 @@
   <top>
     <VBox style="-fx-background-color:#1a1a2e; -fx-padding:12 20 12 20;">
       <Label text="Buscar Espectaculo" textFill="WHITE"><font><Font size="20"/></font></Label>
-      <Label text="Consulta la informacion completa de cualquier espectaculo"
+      <Label text="Consulta la informacion completa de cualquier espectaculo. Puedes exportar el informe a XML."
              textFill="#aaaaaa" style="-fx-font-size:11;"/>
     </VBox>
   </top>
+
   <center>
     <VBox spacing="14" style="-fx-padding:22;">
 
@@ -53,10 +54,24 @@
         <TextArea fx:id="taNumeros" editable="false" wrapText="true"
                   prefHeight="270" VBox.vgrow="ALWAYS"
                   style="-fx-font-family:'Courier New'; -fx-font-size:12;"/>
+
+        <Separator/>
+
+        <!-- CU4B: Exportar informe XML -->
+        <HBox spacing="14" alignment="CENTER_LEFT">
+          <Button fx:id="btnExportarXml"
+                  text="Exportar informe XML"
+                  onAction="#exportarXml"
+                  prefWidth="200" prefHeight="36"
+                  style="-fx-background-color:#2980b9; -fx-text-fill:white; -fx-font-weight:bold;"/>
+          <Label fx:id="lblExportMsg" text="" wrapText="true" maxWidth="700"
+                 style="-fx-font-size:12;"/>
+        </HBox>
       </VBox>
 
     </VBox>
   </center>
+
   <bottom>
     <HBox alignment="CENTER_RIGHT" spacing="8">
       <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>

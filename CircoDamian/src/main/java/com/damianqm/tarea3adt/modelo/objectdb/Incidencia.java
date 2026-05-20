@@ -3,10 +3,6 @@ package com.damianqm.tarea3adt.modelo.objectdb;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * Entidad persistida en ObjectDB (servidor). Representa una incidencia técnica,
- * artística u organizativa del circo.
- */
 @Entity
 public class Incidencia {
 
@@ -14,29 +10,26 @@ public class Incidencia {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	/** Fecha y hora en que se registra la incidencia (automático). */
 	private LocalDateTime fechaHora;
 
-	/** Tipo de incidencia. */
 	@Enumerated(EnumType.STRING)
 	private TipoIncidencia tipo;
 
-	/** Descripción abierta, hasta 1000 caracteres. */
 	@Column(length = 1000)
 	private String descripcion;
 
-	/** Indica si la incidencia está resuelta. Por defecto false. */
 	private boolean resuelta = false;
 
-	/** Id de la persona que reporta la incidencia (obligatorio). */
 	@Column(nullable = false)
 	private Long idPersonaReporta;
 
-	/** Id del espectáculo afectado (opcional). */
 	private Long idEspectaculo;
 
-	/** Id del número circense afectado (opcional). */
 	private Long idNumero;
+
+	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+	@JoinColumn(name = "resolucion_id")
+	private ResolucionIncidencia resolucion;
 
 	public Incidencia() {
 	}
@@ -116,6 +109,14 @@ public class Incidencia {
 
 	public void setIdNumero(Long idNumero) {
 		this.idNumero = idNumero;
+	}
+
+	public ResolucionIncidencia getResolucion() {
+		return resolucion;
+	}
+
+	public void setResolucion(ResolucionIncidencia resolucion) {
+		this.resolucion = resolucion;
 	}
 
 	@Override

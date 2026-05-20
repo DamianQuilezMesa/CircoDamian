@@ -149,7 +149,7 @@ public class MainController implements Initializable {
 
 	@FXML
 	private void irResolverIncidencia(ActionEvent e) {
-		stageManager.switchScene(FxmlView.RESOLVER_INCIDENCIA);
+		stageManager.switchScene(FxmlView.CONSULTAR_INCIDENCIAS);
 	}
 
 	@FXML

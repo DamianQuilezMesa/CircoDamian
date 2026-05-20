@@ -10,7 +10,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
-@EntityScan("com.damianqm.tarea3adt.modelo")  // solo entidades JPA/MySQL; excluye modelo.objectdb
+@EntityScan("com.damianqm.tarea3adt.modelo") // solo entidades JPA/MySQL; excluye modelo.objectdb
 public class Tarea3AdtApplication extends Application {
 
 	private ConfigurableApplicationContext springContext;

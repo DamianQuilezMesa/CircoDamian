@@ -3,10 +3,6 @@ package com.damianqm.tarea3adt.modelo.objectdb;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * Entidad persistida en ObjectDB que documenta la resolución de una incidencia.
- * Relación unidireccional hacia {@link Incidencia}.
- */
 @Entity
 public class ResolucionIncidencia {
 
@@ -14,17 +10,13 @@ public class ResolucionIncidencia {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	/** Fecha y hora en que se registra la resolución (automático). */
 	private LocalDateTime fechahoraResolucion;
 
-	/** Descripción de las acciones realizadas para resolver la incidencia. */
 	@Column(length = 2000)
 	private String accionesRealizadas;
 
-	/** Id de la persona que resuelve la incidencia. */
 	private Long idPersonaResuelve;
 
-	/** Relación unidireccional con la incidencia resuelta. */
 	@ManyToOne
 	@JoinColumn(name = "incidencia_id")
 	private Incidencia incidencia;
@@ -39,7 +31,7 @@ public class ResolucionIncidencia {
 		this.incidencia = incidencia;
 	}
 
-	// ── Getters / Setters ────────────────────────────────
+	//  Getters / Setters 
 
 	public Long getId() {
 		return id;

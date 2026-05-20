@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -42,8 +43,8 @@ public class PersonaService {
 				especialidades);
 		a = artistaRepository.save(a);
 		credencialesRepository.save(new Credenciales(usuario.toLowerCase().trim(), password, Perfil.ARTISTA, a));
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.NUEVO,
-				"Se ha insertado un nuevo Artista de id " + a.getId());
+		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.NUEVO,
+				"Nuevo Artista [id=" + a.getId() + "] " + a.getNombre());
 		return a;
 	}
 
@@ -58,8 +59,8 @@ public class PersonaService {
 				senior, fechaSenior);
 		c = coordinacionRepository.save(c);
 		credencialesRepository.save(new Credenciales(usuario.toLowerCase().trim(), password, Perfil.COORDINACION, c));
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.NUEVO,
-				"Se ha insertado una nueva Coordinacion de id " + c.getId());
+		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.NUEVO,
+				"Nueva Coordinación [id=" + c.getId() + "] " + c.getNombre());
 		return c;
 	}
 
@@ -71,12 +72,21 @@ public class PersonaService {
 		if (!p.getEmail().equalsIgnoreCase(email.trim()) && personaRepository.existsByEmail(email.trim().toLowerCase()))
 			throw new IllegalArgumentException("El email ya está en uso.");
 
-		p.setNombre(nombre.trim());
-		p.setEmail(email.trim().toLowerCase());
-		p.setNacionalidad(nacionalidad.trim().toUpperCase());
+		String nuevoNombre = nombre.trim();
+		String nuevoEmail  = email.trim().toLowerCase();
+		String nuevaNac    = nacionalidad.trim().toUpperCase();
+
+		boolean sinCambios = p.getNombre().equals(nuevoNombre)
+				&& p.getEmail().equals(nuevoEmail)
+				&& p.getNacionalidad().equals(nuevaNac);
+		if (sinCambios) return p;
+
+		p.setNombre(nuevoNombre);
+		p.setEmail(nuevoEmail);
+		p.setNacionalidad(nuevaNac);
 		Persona saved = personaRepository.save(p);
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.ACTUALIZACION,
-				"Se ha actualizado la informacion del id " + saved.getId() + " de Persona");
+		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
+				"Modificación de Persona [id=" + saved.getId() + "] " + saved.getNombre());
 		return saved;
 	}
 
@@ -85,11 +95,17 @@ public class PersonaService {
 		Artista a = artistaRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Artista no encontrado."));
 		validarEspecialidades(especialidades);
-		a.setApodo(apodo != null && !apodo.isBlank() ? apodo.trim() : null);
+
+		String nuevoApodo = apodo != null && !apodo.isBlank() ? apodo.trim() : null;
+		boolean sinCambios = Objects.equals(a.getApodo(), nuevoApodo)
+				&& a.getEspecialidades().equals(especialidades);
+		if (sinCambios) return a;
+
+		a.setApodo(nuevoApodo);
 		a.setEspecialidades(especialidades);
 		Artista saved = artistaRepository.save(a);
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.ACTUALIZACION,
-				"Se ha actualizado la informacion del id " + saved.getId() + " de Artista");
+		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
+				"Modificación de Artista [id=" + saved.getId() + "] " + saved.getNombre());
 		return saved;
 	}
 
@@ -98,11 +114,17 @@ public class PersonaService {
 		Coordinacion c = coordinacionRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Coordinación no encontrada."));
 		validarSenior(senior, fechaSenior);
+
+		LocalDate nuevaFecha = senior ? fechaSenior : null;
+		boolean sinCambios = c.isSenior() == senior
+				&& Objects.equals(c.getFechaSenior(), nuevaFecha);
+		if (sinCambios) return c;
+
 		c.setSenior(senior);
-		c.setFechaSenior(senior ? fechaSenior : null);
+		c.setFechaSenior(nuevaFecha);
 		Coordinacion saved = coordinacionRepository.save(c);
-		logService.registrarOperacion(sesionService.getNombreUsuarioActual(), TipoOperacion.ACTUALIZACION,
-				"Se ha actualizado la informacion del id " + saved.getId() + " de Coordinacion");
+		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
+				"Modificación de Coordinación [id=" + saved.getId() + "] " + saved.getNombre());
 		return saved;
 	}
 
@@ -139,6 +161,16 @@ public class PersonaService {
 	@Transactional(readOnly = true)
 	public Optional<Credenciales> findCredencialesByPersonaId(Long id) {
 		return credencialesRepository.findByPersonaId(id);
+	}
+
+
+	@Transactional(readOnly = true)
+	public String findNombrePersonaById(Long id) {
+		if (id == null)  return "—";
+		if (id == -1L)   return "admin del sistema";
+		return personaRepository.findById(id)
+				.map(p -> p.getNombre())
+				.orElse("ID " + id);
 	}
 
 	private void validarPersona(String nombre, String email, String nacionalidad) {

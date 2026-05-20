@@ -13,7 +13,7 @@
 	<packaging>jar</packaging>
 	<version>1.0.0</version>
 	<name>tarea3adt</name>
-	<description>CIRCO - Tarea 3 y 4 Acceso a Datos e Interfaces - Damian QM</description>
+	<description>CIRCO - Tareas 3, 4 y 5 Acceso a Datos - Damian QM</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -69,6 +69,20 @@
 			<groupId>com.objectdb</groupId>
 			<artifactId>objectdb</artifactId>
 			<version>2.9.5</version>
+		</dependency>
+
+		<!-- eXistDB XML:DB client (Tarea 5 - BD XML) -->
+		<dependency>
+			<groupId>org.exist-db</groupId>
+			<artifactId>exist-core</artifactId>
+			<version>6.2.0</version>
+			<exclusions>
+				<!-- xml-apis duplica org.w3c.dom y javax.xml que ya provee el JDK -->
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 	

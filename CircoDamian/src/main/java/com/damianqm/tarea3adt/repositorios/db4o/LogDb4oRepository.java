@@ -19,77 +19,74 @@ import java.util.stream.Collectors;
 @Repository
 public class LogDb4oRepository {
 
-    private static final String DB_PATH = "ficheros/log.db4o";
-    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+	private static final String DB_PATH = "ficheros/log.db4o";
+	private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
-    public LogDb4oRepository() {
-        new File("ficheros").mkdirs();
-    }
+	public LogDb4oRepository() {
+		new File("ficheros").mkdirs();
+	}
 
-    private ObjectContainer abrirDb() {
-        return Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), DB_PATH);
-    }
+	private ObjectContainer abrirDb() {
+		return Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), DB_PATH);
+	}
 
-    // CU7 – Guardar log
-    public void guardar(LogOperacion log) {
-        ObjectContainer db = abrirDb();
-        try {
-            if (log.getId() == null) {
-                long siguiente = db.query(LogOperacion.class).size() + 1L;
-                log.setId(siguiente);
-            }
-            db.store(log);
-            db.commit();
-        } finally {
-            db.close();
-        }
-    }
+	public void guardar(LogOperacion log) {
+		ObjectContainer db = abrirDb();
+		try {
+			if (log.getId() == null) {
+				long siguiente = db.query(LogOperacion.class).size() + 1L;
+				log.setId(siguiente);
+			}
+			db.store(log);
+			db.commit();
+		} finally {
+			db.close();
+		}
+	}
 
-    // CU10 – Native Query (todos los campos son String, sin problemas de módulos)
-    public List<LogOperacion> consultar(String usuario, Set<TipoOperacion> tipos,
-            LocalDateTime desde, LocalDateTime hasta) {
+	// CU10 – Native Query; los campos de LogOperacion son String porque DB4O
+	// con Java 21 no puede acceder por reflexión a tipos como Enum o LocalDateTime
+	public List<LogOperacion> consultar(String usuario, Set<TipoOperacion> tipos, LocalDateTime desde,
+			LocalDateTime hasta) {
 
-        final String u          = (usuario != null) ? usuario.trim() : "";
-        final String desdeStr   = desde != null ? desde.format(FMT) : null;
-        final String hastaStr   = hasta != null ? hasta.format(FMT) : null;
-        final Set<String> tiposStr = tipos != null
-                ? tipos.stream().map(TipoOperacion::name).collect(Collectors.toSet())
-                : null;
-        final boolean filtrarTipos = tiposStr != null && !tiposStr.isEmpty();
+		final String u = (usuario != null) ? usuario.trim() : "";
+		final String desdeStr = desde != null ? desde.format(FMT) : null;
+		final String hastaStr = hasta != null ? hasta.format(FMT) : null;
+		final Set<String> tiposStr = tipos != null ? tipos.stream().map(TipoOperacion::name).collect(Collectors.toSet())
+				: null;
+		final boolean filtrarTipos = tiposStr != null && !tiposStr.isEmpty();
 
-        ObjectContainer db = abrirDb();
-        try {
-            ObjectSet<LogOperacion> result = db.query(new Predicate<LogOperacion>() {
-                @Override
-                public boolean match(LogOperacion log) {
-                    if (!u.isEmpty() && !u.equalsIgnoreCase(log.getUsuario()))
-                        return false;
-                    if (filtrarTipos && !tiposStr.contains(log.getTipoOperacion()))
-                        return false;
-                    if (desdeStr != null && log.getFechaHoraStr() != null
-                            && log.getFechaHoraStr().compareTo(desdeStr) < 0)
-                        return false;
-                    if (hastaStr != null && log.getFechaHoraStr() != null
-                            && log.getFechaHoraStr().compareTo(hastaStr) > 0)
-                        return false;
-                    return true;
-                }
-            });
-            return new ArrayList<>(result);
-        } finally {
-            db.close();
-        }
-    }
+		ObjectContainer db = abrirDb();
+		try {
+			ObjectSet<LogOperacion> result = db.query(new Predicate<LogOperacion>() {
+				@Override
+				public boolean match(LogOperacion log) {
+					if (!u.isEmpty() && !u.equalsIgnoreCase(log.getUsuario()))
+						return false;
+					if (filtrarTipos && !tiposStr.contains(log.getTipoOperacion()))
+						return false;
+					if (desdeStr != null && log.getFechaHoraStr() != null
+							&& log.getFechaHoraStr().compareTo(desdeStr) < 0)
+						return false;
+					if (hastaStr != null && log.getFechaHoraStr() != null
+							&& log.getFechaHoraStr().compareTo(hastaStr) > 0)
+						return false;
+					return true;
+				}
+			});
+			return new ArrayList<>(result);
+		} finally {
+			db.close();
+		}
+	}
 
-    public List<String> obtenerUsuariosDistintos() {
-        ObjectContainer db = abrirDb();
-        try {
-            return db.query(LogOperacion.class).stream()
-                    .map(LogOperacion::getUsuario)
-                    .filter(u -> u != null && !u.isBlank())
-                    .distinct().sorted().toList();
-        } finally {
-            db.close();
-        }
-    }
+	public List<String> obtenerUsuariosDistintos() {
+		ObjectContainer db = abrirDb();
+		try {
+			return db.query(LogOperacion.class).stream().map(LogOperacion::getUsuario)
+					.filter(u -> u != null && !u.isBlank()).distinct().sorted().toList();
+		} finally {
+			db.close();
+		}
+	}
 }

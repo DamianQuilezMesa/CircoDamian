@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<informe>
+   <fechahora>20-05-2026 23:21:25</fechahora>
+   <espectaculo>
+      <id>1</id>
+      <nombre>Noche de Estrellitas</nombre>
+      <fechaini>01-06-2025</fechaini>
+      <fechafin>31-08-2025</fechafin>
+      <coordinacion>
+         <nombre>Laura Mendez</nombre>
+         <email>laura.mendez@circo.com</email>
+         <senior>true</senior>
+      </coordinacion>
+      <numeros>
+         <numero>
+            <orden>1</orden>
+            <nombre>Apertura Acrobatica</nombre>
+            <duracion>10.0</duracion>
+            <artistas>
+               <artista>
+                  <nombre>Marco Rossi</nombre>
+                  <nacionalidad>IT</nacionalidad>
+                  <email>marco.rossi@circo.com</email>
+                  <especialidades>ACROBACIA,EQUILIBRISMO</especialidades>
+                  <apodo>El Gran Marco</apodo>
+               </artista>
+               <artista>
+                  <nombre>Ivan Petrov</nombre>
+                  <nacionalidad>RU</nacionalidad>
+                  <email>ivan.petrov@circo.com</email>
+                  <especialidades>ACROBACIA,MALABARISMO</especialidades>
+               </artista>
+            </artistas>
+         </numero>
+         <numero>
+            <orden>2</orden>
+            <nombre>El Mago del Fuego</nombre>
+            <duracion>8.5</duracion>
+            <artistas>
+               <artista>
+                  <nombre>Luis Torres</nombre>
+                  <nacionalidad>MO</nacionalidad>
+                  <email>luis.torres@circo.com</email>
+                  <especialidades>MAGIA</especialidades>
+                  <apodo>El Mago Torres</apodo>
+               </artista>
+            </artistas>
+         </numero>
+         <numero>
+            <orden>3</orden>
+            <nombre>Equilibrio en Altura</nombre>
+            <duracion>12.0</duracion>
+            <artistas>
+               <artista>
+                  <nombre>Marco Rossi</nombre>
+                  <nacionalidad>IT</nacionalidad>
+                  <email>marco.rossi@circo.com</email>
+                  <especialidades>ACROBACIA,EQUILIBRISMO</especialidades>
+                  <apodo>El Gran Marco</apodo>
+               </artista>
+               <artista>
+                  <nombre>Kenji Tanaka</nombre>
+                  <nacionalidad>JP</nacionalidad>
+                  <email>kenji.tanaka@circo.com</email>
+                  <especialidades>ACROBACIA,EQUILIBRISMO</especialidades>
+                  <apodo>Kenjiro</apodo>
+               </artista>
+            </artistas>
+         </numero>
+         <numero>
+            <orden>4</orden>
+            <nombre>Cierre con Humor</nombre>
+            <duracion>6.5</duracion>
+            <artistas>
+               <artista>
+                  <nombre>Ana Lima</nombre>
+                  <nacionalidad>BR</nacionalidad>
+                  <email>ana.lima@circo.com</email>
+                  <especialidades>HUMOR,MAGIA</especialidades>
+                  <apodo>Aninha</apodo>
+               </artista>
+               <artista>
+                  <nombre>Sofia Dupont</nombre>
+                  <nacionalidad>FR</nacionalidad>
+                  <email>sofia.dupont@circo.com</email>
+                  <especialidades>HUMOR</especialidades>
+                  <apodo>La Pluma</apodo>
+               </artista>
+            </artistas>
+         </numero>
+      </numeros>
+   </espectaculo>
+</informe>

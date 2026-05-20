@@ -4,9 +4,12 @@ import com.damianqm.tarea3adt.config.StageManager;
 import com.damianqm.tarea3adt.modelo.Espectaculo;
 import com.damianqm.tarea3adt.modelo.Numero;
 import com.damianqm.tarea3adt.modelo.objectdb.Incidencia;
+import com.damianqm.tarea3adt.modelo.objectdb.ResolucionIncidencia;
 import com.damianqm.tarea3adt.modelo.objectdb.TipoIncidencia;
 import com.damianqm.tarea3adt.services.EspectaculoService;
 import com.damianqm.tarea3adt.services.IncidenciaService;
+import com.damianqm.tarea3adt.services.PersonaService;
+import com.damianqm.tarea3adt.services.SesionService;
 import com.damianqm.tarea3adt.view.FxmlView;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -14,6 +17,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -23,14 +27,12 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
-/**
- * CU11 – Consultar incidencias (cualquier usuario autenticado). Filtros: tipo,
- * estado, espectáculo, número, rango de fechas. Usa JPQL a través de
- * IncidenciaService/IncidenciaRepository.
- */
+// CU11 – consultar incidencias / CU9 – resolver incidencia (vista unificada)
 @Controller
 public class ConsultarIncidenciasController implements Initializable {
 
@@ -52,8 +54,6 @@ public class ConsultarIncidenciasController implements Initializable {
 	@FXML
 	private TableView<Incidencia> tablaIncidencias;
 	@FXML
-	private TableColumn<Incidencia, String> colId;
-	@FXML
 	private TableColumn<Incidencia, String> colFecha;
 	@FXML
 	private TableColumn<Incidencia, String> colTipo;
@@ -71,33 +71,84 @@ public class ConsultarIncidenciasController implements Initializable {
 	@FXML
 	private Label lblMensaje;
 
-	private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+	// Panel de detalle
+	@FXML
+	private TitledPane panelDetalle;
 
+	/** ID y nombre de la persona que reportó la incidencia. */
+	@FXML
+	private Label lblReportadaPor;
+	/** Muestra "RESUELTA" / "PENDIENTE" con color. */
+	@FXML
+	private Label lblEstadoResolucion;
+	/** Nombre de la persona que resolvió (vacío si pendiente). */
+	@FXML
+	private Label lblResueltaPor;
+	/** Descripción de las acciones de resolución (vacío si pendiente). */
+	@FXML
+	private TextArea taResolucionDetalle;
+	/** ID de la entidad ResolucionIncidencia (para verificación en pruebas). */
+	@FXML
+	private Label lblResolucionId;
+
+	/**
+	 * Subpanel que solo se muestra si la incidencia es pendiente y el usuario puede
+	 * resolverla.
+	 */
+	@FXML
+	private VBox panelResolver;
+	@FXML
+	private TextArea taAcciones;
+
+	// Servicios
 	@Autowired
 	private IncidenciaService incidenciaService;
 	@Autowired
 	private EspectaculoService espectaculoService;
+	@Autowired
+	private PersonaService personaService;
+	@Autowired
+	private SesionService sesionService;
 	@Lazy
 	@Autowired
 	private StageManager stageManager;
 
+	private final Map<Long, String> nombreEspectaculo = new HashMap<>();
+	private final Map<Long, String> nombreNumero = new HashMap<>();
+
+	private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		// Combo tipo (con opción "Todas")
+		cargarCacheEspectaculos();
+		configurarFiltros();
+		configurarTabla();
+		configurarSeleccion();
+		buscar(null);
+	}
+
+	private void cargarCacheEspectaculos() {
+		for (Espectaculo e : espectaculoService.findAll()) {
+			nombreEspectaculo.put(e.getId(), e.getNombre());
+			for (Numero n : espectaculoService.findNumerosPorEspectaculo(e.getId())) {
+				nombreNumero.put(n.getId(), n.getNombre());
+			}
+		}
+	}
+
+	private void configurarFiltros() {
 		cbTipo.setItems(FXCollections.observableArrayList(TipoIncidencia.values()));
 		cbTipo.setPromptText("Todas");
 
-		// Combo estado
 		cbEstado.setItems(FXCollections.observableArrayList("Todas", "Pendientes", "Resueltas"));
 		cbEstado.setValue("Todas");
 
-		// Combo espectáculo
 		cbEspectaculo.setItems(FXCollections.observableArrayList(espectaculoService.findAll()));
 		cbEspectaculo.setPromptText("Todos");
 		cbEspectaculo.setConverter(new StringConverter<Espectaculo>() {
 			@Override
 			public String toString(Espectaculo e) {
-				return e == null ? "" : "[" + e.getId() + "] " + e.getNombre();
+				return e == null ? "" : e.getNombre();
 			}
 
 			@Override
@@ -106,7 +157,6 @@ public class ConsultarIncidenciasController implements Initializable {
 			}
 		});
 
-		// Al elegir espectáculo, cargar sus números
 		cbEspectaculo.getSelectionModel().selectedItemProperty().addListener((obs, viejo, nuevo) -> {
 			cbNumero.getItems().clear();
 			cbNumero.getSelectionModel().clearSelection();
@@ -120,7 +170,7 @@ public class ConsultarIncidenciasController implements Initializable {
 		cbNumero.setConverter(new StringConverter<Numero>() {
 			@Override
 			public String toString(Numero n) {
-				return n == null ? "" : "[" + n.getOrden() + "] " + n.getNombre();
+				return n == null ? "" : "[" + n.getId() + "] " + n.getNombre();
 			}
 
 			@Override
@@ -128,21 +178,32 @@ public class ConsultarIncidenciasController implements Initializable {
 				return null;
 			}
 		});
+	}
 
-		// Columnas
-		colId.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getId())));
+	private void configurarTabla() {
 		colFecha.setCellValueFactory(d -> new SimpleStringProperty(
 				d.getValue().getFechaHora() != null ? d.getValue().getFechaHora().format(FMT) : ""));
 		colTipo.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getTipo().name()));
 		colEstado.setCellValueFactory(
 				d -> new SimpleStringProperty(d.getValue().isResuelta() ? "RESUELTA" : "PENDIENTE"));
-		colEsp.setCellValueFactory(d -> new SimpleStringProperty(
-				d.getValue().getIdEspectaculo() != null ? String.valueOf(d.getValue().getIdEspectaculo()) : "—"));
-		colNum.setCellValueFactory(d -> new SimpleStringProperty(
-				d.getValue().getIdNumero() != null ? String.valueOf(d.getValue().getIdNumero()) : "—"));
+
+		// ID + nombre en las columnas de espectáculo y número
+		colEsp.setCellValueFactory(d -> {
+			Long id = d.getValue().getIdEspectaculo();
+			if (id == null)
+				return new SimpleStringProperty("—");
+			return new SimpleStringProperty(id + " – " + nombreEspectaculo.getOrDefault(id, "?"));
+		});
+		colNum.setCellValueFactory(d -> {
+			Long id = d.getValue().getIdNumero();
+			if (id == null)
+				return new SimpleStringProperty("—");
+			return new SimpleStringProperty(id + " – " + nombreNumero.getOrDefault(id, "?"));
+		});
+
 		colDesc.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getDescripcion()));
 
-		// Colorear según estado
+		// Color de fila según estado
 		tablaIncidencias.setRowFactory(tv -> new TableRow<>() {
 			@Override
 			protected void updateItem(Incidencia item, boolean empty) {
@@ -155,13 +216,75 @@ public class ConsultarIncidenciasController implements Initializable {
 					setStyle("-fx-background-color:#fdebd0;");
 			}
 		});
+	}
 
-		buscar(null);
+	private void configurarSeleccion() {
+		tablaIncidencias.getSelectionModel().selectedItemProperty().addListener((obs, viejo, nueva) -> {
+			if (nueva == null) {
+				ocultarDetalle();
+				return;
+			}
+			mostrarDetalle(nueva);
+		});
+	}
+
+	private void mostrarDetalle(Incidencia inc) {
+		panelDetalle.setVisible(true);
+		panelDetalle.setManaged(true);
+
+		// Reportada por (siempre visible)
+		Long idReporta = inc.getIdPersonaReporta();
+		String nombreReporta = personaService.findNombrePersonaById(idReporta);
+		lblReportadaPor.setText(idReporta + " – " + nombreReporta);
+
+		if (inc.isResuelta()) {
+			ResolucionIncidencia res = inc.getResolucion();
+			if (res != null) {
+				lblEstadoResolucion.setText("RESUELTA");
+				lblEstadoResolucion.setStyle("-fx-text-fill:#27ae60; -fx-font-weight:bold;");
+				Long idResuelve = res.getIdPersonaResuelve();
+				lblResueltaPor.setText(idResuelve + " – " + personaService.findNombrePersonaById(idResuelve));
+				taResolucionDetalle.setText(res.getAccionesRealizadas());
+				lblResolucionId.setText("ID " + res.getId());
+			} else {
+				// Incidencia marcada resuelta pero sin objeto resolución (datos legacy)
+				lblEstadoResolucion.setText("RESUELTA (sin detalle)");
+				lblEstadoResolucion.setStyle("-fx-text-fill:#27ae60;");
+				lblResueltaPor.setText("—");
+				taResolucionDetalle.setText("");
+				lblResolucionId.setText("—");
+			}
+			panelResolver.setVisible(false);
+			panelResolver.setManaged(false);
+
+		} else {
+			// Pendiente
+			lblEstadoResolucion.setText("PENDIENTE");
+			lblEstadoResolucion.setStyle("-fx-text-fill:#e67e22; -fx-font-weight:bold;");
+			lblResueltaPor.setText("—");
+			taResolucionDetalle.setText("");
+			lblResolucionId.setText("—");
+
+			// Mostrar el formulario solo si tiene permiso
+			boolean puedeResolver = sesionService.isCoordinacion();
+			panelResolver.setVisible(puedeResolver);
+			panelResolver.setManaged(puedeResolver);
+			if (puedeResolver)
+				taAcciones.clear();
+		}
+	}
+
+	private void ocultarDetalle() {
+		panelDetalle.setVisible(false);
+		panelDetalle.setManaged(false);
+		panelResolver.setVisible(false);
+		panelResolver.setManaged(false);
 	}
 
 	@FXML
 	private void buscar(ActionEvent e) {
 		lblMensaje.setText("");
+		ocultarDetalle();
 
 		TipoIncidencia tipo = cbTipo.getValue();
 		String est = cbEstado.getValue();
@@ -181,8 +304,7 @@ public class ConsultarIncidenciasController implements Initializable {
 		LocalDateTime hasta = dpHasta.getValue() != null ? dpHasta.getValue().atTime(LocalTime.MAX) : null;
 
 		if (desde != null && hasta != null && hasta.isBefore(desde)) {
-			lblMensaje.setStyle("-fx-text-fill:#c0392b;");
-			lblMensaje.setText("La fecha 'Hasta' debe ser posterior a 'Desde'.");
+			error("La fecha 'Hasta' debe ser posterior a 'Desde'.");
 			return;
 		}
 
@@ -191,9 +313,44 @@ public class ConsultarIncidenciasController implements Initializable {
 			tablaIncidencias.setItems(FXCollections.observableArrayList(resultados));
 			lblResultados.setText("Resultados: " + resultados.size());
 		} catch (Exception ex) {
-			lblMensaje.setStyle("-fx-text-fill:#c0392b;");
-			lblMensaje.setText("Error al consultar: " + ex.getMessage());
+			error("Error al consultar: " + ex.getMessage());
 		}
+	}
+
+	@FXML
+	private void resolver(ActionEvent e) {
+		lblMensaje.setText("");
+		Incidencia sel = tablaIncidencias.getSelectionModel().getSelectedItem();
+		if (sel == null) {
+			error("Selecciona una incidencia de la tabla.");
+			return;
+		}
+		if (sel.isResuelta()) {
+			error("Esta incidencia ya está resuelta.");
+			return;
+		}
+
+		String acciones = taAcciones.getText();
+		if (acciones == null || acciones.isBlank()) {
+			error("Describe las acciones realizadas para resolver la incidencia.");
+			return;
+		}
+
+		Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+				"¿Marcar como resuelta la incidencia del " + sel.getFechaHora().format(FMT) + "?", ButtonType.YES,
+				ButtonType.NO);
+		confirm.setTitle("Confirmar resolución");
+		confirm.showAndWait().ifPresent(btn -> {
+			if (btn == ButtonType.YES) {
+				try {
+					incidenciaService.resolver(sel.getId(), acciones);
+					ok("Incidencia resuelta correctamente.");
+					buscar(null);
+				} catch (Exception ex) {
+					error("Error: " + ex.getMessage());
+				}
+			}
+		});
 	}
 
 	@FXML
@@ -211,5 +368,15 @@ public class ConsultarIncidenciasController implements Initializable {
 	@FXML
 	private void volver(ActionEvent e) {
 		stageManager.switchScene(FxmlView.MAIN);
+	}
+
+	private void error(String m) {
+		lblMensaje.setStyle("-fx-text-fill:#c0392b; -fx-font-weight:bold;");
+		lblMensaje.setText(m);
+	}
+
+	private void ok(String m) {
+		lblMensaje.setStyle("-fx-text-fill:#27ae60; -fx-font-weight:bold;");
+		lblMensaje.setText(m);
 	}
 }

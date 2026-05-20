@@ -4,83 +4,148 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefWidth="1120" prefHeight="760"
+<BorderPane prefWidth="1120" prefHeight="820"
             stylesheets="@../styles/Styles.css"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.damianqm.tarea3adt.controller.ConsultarIncidenciasController">
   <top>
     <VBox styleClass="background" spacing="4">
       <padding><Insets top="14" left="24" bottom="12" right="24"/></padding>
-      <Label text="Consultar Incidencias" textFill="WHITE"><font><Font size="18"/></font></Label>
-      <Label text="Filtra y consulta las incidencias registradas en el circo."
+      <Label text="Incidencias" textFill="WHITE"><font><Font size="18"/></font></Label>
+      <Label text="Consulta, filtra y resuelve las incidencias del circo."
              textFill="#aaaaaa" style="-fx-font-size:12;"/>
     </VBox>
   </top>
 
   <center>
-    <VBox spacing="12" style="-fx-padding:20;">
+    <!-- ScrollPane evita el solapamiento cuando el panel de detalle se despliega -->
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+      <VBox spacing="12" style="-fx-padding:20;">
 
-      <!-- Panel de filtros -->
-      <TitledPane text="Filtros" collapsible="false">
-        <GridPane hgap="16" vgap="10">
-          <padding><Insets top="10" left="10" bottom="10" right="10"/></padding>
-          <columnConstraints>
-            <ColumnConstraints percentWidth="25"/>
-            <ColumnConstraints percentWidth="25"/>
-            <ColumnConstraints percentWidth="25"/>
-            <ColumnConstraints percentWidth="25"/>
-          </columnConstraints>
+        <!-- Panel de filtros -->
+        <TitledPane text="Filtros" collapsible="false">
+          <GridPane hgap="16" vgap="10">
+            <padding><Insets top="10" left="10" bottom="10" right="10"/></padding>
+            <columnConstraints>
+              <ColumnConstraints percentWidth="25"/>
+              <ColumnConstraints percentWidth="25"/>
+              <ColumnConstraints percentWidth="25"/>
+              <ColumnConstraints percentWidth="25"/>
+            </columnConstraints>
 
-          <Label text="Tipo:"        GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-          <Label text="Estado:"      GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-          <Label text="Espectáculo:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-          <Label text="Número:"      GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+            <Label text="Tipo:"        GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Label text="Estado:"      GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            <Label text="Espectáculo:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+            <Label text="Número:"      GridPane.columnIndex="3" GridPane.rowIndex="0"/>
 
-          <ComboBox fx:id="cbTipo"        prefHeight="32" maxWidth="Infinity"
-                    GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-          <ComboBox fx:id="cbEstado"      prefHeight="32" maxWidth="Infinity"
-                    GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-          <ComboBox fx:id="cbEspectaculo" prefHeight="32" maxWidth="Infinity"
-                    GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-          <ComboBox fx:id="cbNumero"      prefHeight="32" maxWidth="Infinity"
-                    GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+            <ComboBox fx:id="cbTipo"        prefHeight="32" maxWidth="Infinity"
+                      GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <ComboBox fx:id="cbEstado"      prefHeight="32" maxWidth="Infinity"
+                      GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <ComboBox fx:id="cbEspectaculo" prefHeight="32" maxWidth="Infinity"
+                      GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+            <ComboBox fx:id="cbNumero"      prefHeight="32" maxWidth="Infinity"
+                      GridPane.columnIndex="3" GridPane.rowIndex="1"/>
 
-          <Label text="Desde:"  GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-          <Label text="Hasta:"  GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            <Label text="Desde:"  GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <Label text="Hasta:"  GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-          <DatePicker fx:id="dpDesde" prefHeight="32" maxWidth="Infinity"
-                      GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-          <DatePicker fx:id="dpHasta" prefHeight="32" maxWidth="Infinity"
-                      GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-        </GridPane>
-      </TitledPane>
+            <DatePicker fx:id="dpDesde" prefHeight="32" maxWidth="Infinity"
+                        GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+            <DatePicker fx:id="dpHasta" prefHeight="32" maxWidth="Infinity"
+                        GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+          </GridPane>
+        </TitledPane>
 
-      <HBox spacing="10" alignment="CENTER_LEFT">
-        <Button text="Buscar" onAction="#buscar" prefWidth="110" prefHeight="34"
-                styleClass="btnGreen" style="-fx-font-weight:bold;"/>
-        <Button text="Limpiar filtros" onAction="#limpiar" prefWidth="130" prefHeight="34"/>
-        <Label fx:id="lblResultados" text="" style="-fx-text-fill:#555; -fx-font-size:12;"/>
-      </HBox>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+          <Button text="Buscar"          onAction="#buscar"  prefWidth="110" prefHeight="34"
+                  styleClass="btnGreen" style="-fx-font-weight:bold;"/>
+          <Button text="Limpiar filtros" onAction="#limpiar" prefWidth="130" prefHeight="34"/>
+          <Label fx:id="lblResultados" text="" style="-fx-text-fill:#555; -fx-font-size:12;"/>
+        </HBox>
 
-      <Label fx:id="lblMensaje" text="" wrapText="true"/>
+        <Label fx:id="lblMensaje" text="" wrapText="true"/>
 
-      <!-- Tabla -->
-      <TableView fx:id="tablaIncidencias" VBox.vgrow="ALWAYS">
-        <columns>
-          <TableColumn fx:id="colId"     text="ID"     prefWidth="55"/>
-          <TableColumn fx:id="colFecha"  text="Fecha"  prefWidth="130"/>
-          <TableColumn fx:id="colTipo"   text="Tipo"   prefWidth="110"/>
-          <TableColumn fx:id="colEstado" text="Estado" prefWidth="100"/>
-          <TableColumn fx:id="colEsp"    text="Esp.ID" prefWidth="65"/>
-          <TableColumn fx:id="colNum"    text="Num.ID" prefWidth="65"/>
-          <TableColumn fx:id="colDesc"   text="Descripción" prefWidth="450"/>
-        </columns>
-        <columnResizePolicy>
-          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-        </columnResizePolicy>
-        <placeholder><Label text="Sin resultados. Aplica los filtros y pulsa Buscar."/></placeholder>
-      </TableView>
-    </VBox>
+        <!-- Tabla — altura fija para que el panel de detalle tenga espacio -->
+        <TableView fx:id="tablaIncidencias" prefHeight="280" minHeight="150">
+          <columns>
+            <TableColumn fx:id="colFecha"   text="Fecha"        prefWidth="120"/>
+            <TableColumn fx:id="colTipo"    text="Tipo"         prefWidth="100"/>
+            <TableColumn fx:id="colEstado"  text="Estado"       prefWidth="90"/>
+            <TableColumn fx:id="colEsp"     text="Espectáculo"  prefWidth="180"/>
+            <TableColumn fx:id="colNum"     text="Número"       prefWidth="160"/>
+            <TableColumn fx:id="colDesc"    text="Descripción"  prefWidth="370"/>
+          </columns>
+          <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+          </columnResizePolicy>
+          <placeholder><Label text="Sin resultados. Aplica los filtros y pulsa Buscar."/></placeholder>
+        </TableView>
+
+        <Separator/>
+
+        <!-- Panel de detalle / resolución -->
+        <TitledPane fx:id="panelDetalle" text="Detalle de la incidencia seleccionada"
+                    collapsible="false" managed="false" visible="false">
+          <VBox spacing="10">
+            <padding><Insets top="10" left="10" bottom="10" right="10"/></padding>
+
+            <GridPane hgap="16" vgap="8">
+              <columnConstraints>
+                <ColumnConstraints minWidth="160" maxWidth="160"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+              </columnConstraints>
+
+              <!-- Fila 0: reportada por -->
+              <Label text="Reportada por:" style="-fx-font-weight:bold;"
+                     GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+              <Label fx:id="lblReportadaPor" text=""
+                     GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+              <!-- Fila 1: estado -->
+              <Label text="Estado resolución:" style="-fx-font-weight:bold;"
+                     GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+              <Label fx:id="lblEstadoResolucion" text=""
+                     GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+              <!-- Fila 2: resuelta por -->
+              <Label text="Resuelta por:" style="-fx-font-weight:bold;"
+                     GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+              <Label fx:id="lblResueltaPor" text=""
+                     GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+              <!-- Fila 3: acciones realizadas -->
+              <Label text="Acciones realizadas:" style="-fx-font-weight:bold;"
+                     GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+              <TextArea fx:id="taResolucionDetalle" prefHeight="70" wrapText="true"
+                        editable="false" focusTraversable="false"
+                        style="-fx-background-color:#f4f4f4;"
+                        GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+              <!-- Fila 4: ID de la ResolucionIncidencia (para verificar PT4-11) -->
+              <Label text="ID Resolución:" style="-fx-font-weight:bold;"
+                     GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+              <Label fx:id="lblResolucionId" text=""
+                     GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+            </GridPane>
+
+            <!-- Formulario para resolver (solo visible si pendiente y tiene permiso) -->
+            <VBox fx:id="panelResolver" spacing="8" managed="false" visible="false">
+              <Separator/>
+              <Label text="Documentar resolución:" style="-fx-font-weight:bold;"/>
+              <TextArea fx:id="taAcciones" prefHeight="90" wrapText="true"
+                        promptText="Describe qué se hizo para resolver la incidencia..."/>
+              <HBox spacing="12">
+                <Button text="Marcar como resuelta" onAction="#resolver"
+                        prefWidth="200" prefHeight="36"
+                        style="-fx-background-color:#e67e22; -fx-text-fill:white; -fx-font-weight:bold;"/>
+              </HBox>
+            </VBox>
+          </VBox>
+        </TitledPane>
+
+      </VBox>
+    </ScrollPane>
   </center>
 
   <bottom>

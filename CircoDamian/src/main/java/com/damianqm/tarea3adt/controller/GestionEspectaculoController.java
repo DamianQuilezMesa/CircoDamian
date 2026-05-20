@@ -281,6 +281,16 @@ public class GestionEspectaculoController implements Initializable {
 	/** Vuelve al Paso 1 sin perder el espectáculo en edición. */
 	@FXML
 	private void volverPaso1(ActionEvent e) {
+		if (espActual != null && numerosObservable.size() < 3) {
+			int faltan = 3 - numerosObservable.size();
+			Alert aviso = new Alert(Alert.AlertType.WARNING,
+					"El espectáculo '" + espActual.getNombre() + "' solo tiene " + numerosObservable.size()
+							+ " número(s). Faltan " + faltan + " para el mínimo de 3.\n\n"
+							+ "Recuerda añadirlos antes de salir al menú principal.",
+					ButtonType.OK);
+			aviso.setTitle("Mínimo de números no alcanzado");
+			aviso.showAndWait();
+		}
 		mostrarPaso(1);
 	}
 	// Helpers de configuración UI
@@ -454,6 +464,12 @@ public class GestionEspectaculoController implements Initializable {
 
 	@FXML
 	private void volver(ActionEvent e) {
+		if (espActual != null && numerosObservable.size() < 3) {
+			int faltan = 3 - numerosObservable.size();
+			error("No puedes salir: el espectáculo '" + espActual.getNombre() + "' tiene solo "
+					+ numerosObservable.size() + " número(s). Añade " + faltan + " más antes de salir.");
+			return;
+		}
 		stageManager.switchScene(FxmlView.MAIN);
 	}
 }

@@ -5,6 +5,7 @@ import com.damianqm.tarea3adt.modelo.Artista;
 import com.damianqm.tarea3adt.modelo.Espectaculo;
 import com.damianqm.tarea3adt.modelo.Numero;
 import com.damianqm.tarea3adt.services.EspectaculoService;
+import com.damianqm.tarea3adt.services.InformeXmlService;
 import com.damianqm.tarea3adt.util.PaisesLoader;
 import com.damianqm.tarea3adt.view.FxmlView;
 import javafx.collections.FXCollections;
@@ -19,12 +20,12 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-/** Buscar un espectáculo y ver su detalle completo (CU4). */
 @Controller
 public class BuscarEspectaculoController implements Initializable {
 
@@ -46,14 +47,23 @@ public class BuscarEspectaculoController implements Initializable {
 	private VBox panelCompleto;
 	@FXML
 	private TextArea taNumeros;
+	@FXML
+	private Button btnExportarXml;
+	@FXML
+	private Label lblExportMsg;
 
 	@Autowired
 	private EspectaculoService espectaculoService;
+	@Autowired
+	private InformeXmlService informeXmlService;
 	@Autowired
 	private PaisesLoader paisesLoader;
 	@Lazy
 	@Autowired
 	private StageManager stageManager;
+
+	/** Espectáculo completo actualmente cargado en el panel. */
+	private Espectaculo espectaculoActual;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -76,10 +86,13 @@ public class BuscarEspectaculoController implements Initializable {
 		panelCompleto.setVisible(false);
 		panelCompleto.setManaged(false);
 		lblSinSeleccion.setVisible(true);
+		lblExportMsg.setText("");
+		btnExportarXml.setDisable(true);
 
 		cbEspectaculo.getSelectionModel().selectedItemProperty().addListener((obs, viejo, nuevo) -> {
 			if (nuevo != null)
 				mostrarDetalle(nuevo);
+			lblExportMsg.setText("");
 		});
 	}
 
@@ -87,6 +100,7 @@ public class BuscarEspectaculoController implements Initializable {
 		lblSinSeleccion.setVisible(false);
 		panelCompleto.setVisible(true);
 		panelCompleto.setManaged(true);
+		btnExportarXml.setDisable(false);
 
 		lblId.setText(String.valueOf(esp.getId()));
 		lblNombre.setText(esp.getNombre());
@@ -96,17 +110,19 @@ public class BuscarEspectaculoController implements Initializable {
 		if (completo.isEmpty())
 			return;
 
-		Espectaculo c = completo.get();
-		lblCoordinador.setText(c.getCoordinador().getNombre() + "  |  " + c.getCoordinador().getEmail());
+		espectaculoActual = completo.get();
 
-		if (c.getCoordinador().isSenior()) {
+		lblCoordinador.setText(espectaculoActual.getCoordinador().getNombre() + "  |  "
+				+ espectaculoActual.getCoordinador().getEmail());
+
+		if (espectaculoActual.getCoordinador().isSenior()) {
 			lblSenior.setText("(Senior)");
 			lblSenior.setStyle("-fx-font-weight:bold; -fx-text-fill:#1a7f37;");
 		} else {
 			lblSenior.setText("");
 		}
 
-		taNumeros.setText(construirTextoNumeros(c.getNumeros()));
+		taNumeros.setText(construirTextoNumeros(espectaculoActual.getNumeros()));
 	}
 
 	private String construirTextoNumeros(List<Numero> numeros) {
@@ -135,7 +151,42 @@ public class BuscarEspectaculoController implements Initializable {
 	}
 
 	@FXML
+	private void exportarXml(ActionEvent e) {
+		if (espectaculoActual == null)
+			return;
+
+		lblExportMsg.setText("");
+
+		Alert confirm = new Alert(
+				Alert.AlertType.CONFIRMATION, "Se generará el informe XML del espectáculo '"
+						+ espectaculoActual.getNombre() + "' y se guardará en /ficheros y en eXistDB.\n\n¿Continuar?",
+				ButtonType.YES, ButtonType.NO);
+		confirm.setTitle("Exportar informe XML");
+		confirm.showAndWait().ifPresent(btn -> {
+			if (btn == ButtonType.YES) {
+				try {
+					Path ruta = informeXmlService.generarYExportar(espectaculoActual);
+					ok("✔  Informe generado: " + ruta.getFileName()
+							+ "\nGuardado en /ficheros y en la colección /informes de eXistDB.");
+				} catch (Exception ex) {
+					error("Error al exportar: " + ex.getMessage());
+				}
+			}
+		});
+	}
+
+	@FXML
 	private void volver(ActionEvent e) {
 		stageManager.switchScene(FxmlView.MAIN);
+	}
+
+	private void ok(String m) {
+		lblExportMsg.setStyle("-fx-text-fill:#1a7f37; -fx-font-weight:bold;");
+		lblExportMsg.setText(m);
+	}
+
+	private void error(String m) {
+		lblExportMsg.setStyle("-fx-text-fill:#c0392b; -fx-font-weight:bold;");
+		lblExportMsg.setText(m);
 	}
 }

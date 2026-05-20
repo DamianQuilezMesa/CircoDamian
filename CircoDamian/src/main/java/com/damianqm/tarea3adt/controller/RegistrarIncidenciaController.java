@@ -72,7 +72,7 @@ public class RegistrarIncidenciaController implements Initializable {
 		cbNumero.setConverter(new StringConverter<Numero>() {
 			@Override
 			public String toString(Numero n) {
-				return n == null ? "" : "[" + n.getOrden() + "] " + n.getNombre();
+				return n == null ? "" : "[" + n.getId() + "] " + n.getNombre();
 			}
 
 			@Override

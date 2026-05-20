@@ -57,12 +57,12 @@ public class SesionService {
 	// Devuelve el id de la persona autenticada. Para el admin (sin Credenciales)
 	// devuelve 0.
 	/**
-	 * Devuelve el id de la persona autenticada.
-	 * Para el administrador del sistema (sin persona en BD) devuelve -1L.
+	 * Devuelve el id de la persona autenticada. Para el administrador del sistema
+	 * (sin persona en BD) devuelve -1L.
 	 */
 	public Long getIdPersonaActual() {
 		if (sesionAdmin)
-			return -1L;   // admin del sistema, no tiene persona en BD
+			return -1L; // admin del sistema, no tiene persona en BD
 		if (usuarioActual != null)
 			return usuarioActual.getPersona().getId();
 		return null;
@@ -73,6 +73,15 @@ public class SesionService {
 			return usuarioAdmin;
 		if (usuarioActual != null)
 			return usuarioActual.getPersona().getNombre();
+		return null;
+	}
+
+	// Devuelve el nombre de login (usado en los logs de DB4O)
+	public String getLoginActual() {
+		if (sesionAdmin)
+			return usuarioAdmin;
+		if (usuarioActual != null)
+			return usuarioActual.getNombreUsuario();
 		return null;
 	}
 
