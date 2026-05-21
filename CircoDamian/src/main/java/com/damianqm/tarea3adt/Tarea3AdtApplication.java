@@ -5,12 +5,16 @@ import com.damianqm.tarea3adt.view.FxmlView;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
-@SpringBootApplication
-@EntityScan("com.damianqm.tarea3adt.modelo") // solo entidades JPA/MySQL; excluye modelo.objectdb
+@SpringBootApplication(exclude = { MongoAutoConfiguration.class, MongoDataAutoConfiguration.class,
+		MongoRepositoriesAutoConfiguration.class })
+@EntityScan("com.damianqm.tarea3adt.modelo") // solo entidades JPA/MySQL; excluye modelo.objectdb y modelo.mongodb
 public class Tarea3AdtApplication extends Application {
 
 	private ConfigurableApplicationContext springContext;

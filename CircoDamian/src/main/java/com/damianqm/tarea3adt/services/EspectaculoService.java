@@ -26,6 +26,8 @@ public class EspectaculoService {
 	private SesionService sesionService;
 	@Autowired
 	private LogService logService;
+	@Autowired
+	private DossierService dossierService;
 
 	@Transactional(readOnly = true)
 	public List<Espectaculo> findAll() {
@@ -122,6 +124,9 @@ public class EspectaculoService {
 		Numero saved = numeroRepository.save(n);
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.NUEVO,
 				"Nuevo Número [id=" + saved.getId() + "] " + saved.getNombre());
+		for (Artista artista : saved.getArtistas()) {
+			dossierService.agregarOActualizarTrayectoria(artista.getId(), saved);
+		}
 		return saved;
 	}
 
@@ -141,6 +146,9 @@ public class EspectaculoService {
 		Numero saved = numeroRepository.save(n);
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
 				"Modificación de Número [id=" + saved.getId() + "] " + saved.getNombre());
+		for (Artista artista : saved.getArtistas()) {
+			dossierService.agregarOActualizarTrayectoria(artista.getId(), saved);
+		}
 		return saved;
 	}
 

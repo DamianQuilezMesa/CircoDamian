@@ -71,6 +71,12 @@
 			<version>2.9.5</version>
 		</dependency>
 
+		<!-- MongoDB Spring Data (Tarea 6 - Dossiers) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+		</dependency>
+
 		<!-- eXistDB XML:DB client (Tarea 5 - BD XML) -->
 		<dependency>
 			<groupId>org.exist-db</groupId>

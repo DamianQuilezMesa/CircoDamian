@@ -146,6 +146,17 @@ public enum FxmlView {
 		public String getFxmlFile() {
 			return "/fxml/ConsultarIncidencias.fxml";
 		}
+	},
+	ACTUALIZAR_DOSSIER {
+		@Override
+		public String getTitle() {
+			return getTexto("dossier.actualizar.title");
+		}
+
+		@Override
+		public String getFxmlFile() {
+			return "/fxml/ActualizarDossier.fxml";
+		}
 	};
 
 	public abstract String getTitle();

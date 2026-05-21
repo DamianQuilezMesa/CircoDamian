@@ -53,6 +53,10 @@ public class MainController implements Initializable {
 	@FXML
 	private Button btnResolverIncidencia;
 
+	// Dossiers MongoDB (Tarea 6)
+	@FXML
+	private Button btnActualizarDossier;
+
 	@Autowired
 	private SesionService sesionService;
 	@Lazy
@@ -88,6 +92,9 @@ public class MainController implements Initializable {
 		mostrarBoton(btnConsultarIncidencias, autenticado);
 		// Resolver: solo coordinación y admin
 		mostrarBoton(btnResolverIncidencia, sesionService.isCoordinacion());
+
+		// Dossiers: solo coordinación y admin
+		mostrarBoton(btnActualizarDossier, sesionService.isCoordinacion());
 
 		// Separador visible si el usuario puede ver incidencias
 		sepIncidencias.setVisible(autenticado);
@@ -150,6 +157,11 @@ public class MainController implements Initializable {
 	@FXML
 	private void irResolverIncidencia(ActionEvent e) {
 		stageManager.switchScene(FxmlView.CONSULTAR_INCIDENCIAS);
+	}
+
+	@FXML
+	private void irActualizarDossier(ActionEvent e) {
+		stageManager.switchScene(FxmlView.ACTUALIZAR_DOSSIER);
 	}
 
 	@FXML

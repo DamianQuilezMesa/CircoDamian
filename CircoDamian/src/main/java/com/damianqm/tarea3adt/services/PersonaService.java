@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class PersonaService {
@@ -31,6 +32,8 @@ public class PersonaService {
 	private SesionService sesionService;
 	@Autowired
 	private LogService logService;
+	@Autowired
+	private DossierService dossierService;
 
 	@Transactional
 	public Artista registrarArtista(String nombre, String email, String nacionalidad, String apodo,
@@ -45,6 +48,7 @@ public class PersonaService {
 		credencialesRepository.save(new Credenciales(usuario.toLowerCase().trim(), password, Perfil.ARTISTA, a));
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.NUEVO,
 				"Nuevo Artista [id=" + a.getId() + "] " + a.getNombre());
+		dossierService.crearDossier(a);
 		return a;
 	}
 
@@ -87,6 +91,7 @@ public class PersonaService {
 		Persona saved = personaRepository.save(p);
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
 				"Modificación de Persona [id=" + saved.getId() + "] " + saved.getNombre());
+		dossierService.actualizarDatosPersonales(saved.getId(), saved.getNombre(), saved.getEmail(), saved.getNacionalidad());
 		return saved;
 	}
 
@@ -106,6 +111,8 @@ public class PersonaService {
 		Artista saved = artistaRepository.save(a);
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
 				"Modificación de Artista [id=" + saved.getId() + "] " + saved.getNombre());
+		List<String> specs = saved.getEspecialidades().stream().map(Enum::name).collect(Collectors.toList());
+		dossierService.actualizarDatosArtista(saved.getId(), saved.getApodo(), specs);
 		return saved;
 	}
 

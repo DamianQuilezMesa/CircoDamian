@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane prefWidth="1120" prefHeight="760"
+            stylesheets="@../styles/Styles.css"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.damianqm.tarea3adt.controller.ActualizarDossierController">
+  <top>
+    <VBox styleClass="background" spacing="4">
+      <padding><Insets top="14" left="24" bottom="12" right="24"/></padding>
+      <Label text="Dossier del Artista" textFill="WHITE"><font><Font size="17"/></font></Label>
+      <Label text="Consulta y actualiza el dossier profesional de cualquier artista"
+             textFill="#aaaaaa" style="-fx-font-size:11;"/>
+    </VBox>
+  </top>
+
+  <center>
+    <VBox spacing="14" style="-fx-padding:20 30 10 30;">
+
+      <!-- Selector de artista -->
+      <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Artista:" style="-fx-font-weight:bold;" prefWidth="90"/>
+        <ComboBox fx:id="cbArtista" prefWidth="360" promptText="-- Selecciona un artista --"/>
+      </HBox>
+
+      <!-- Datos actuales del dossier -->
+      <TitledPane text="Datos del dossier" collapsible="false" style="-fx-font-size:12;">
+        <GridPane hgap="14" vgap="8" style="-fx-padding:10;">
+          <columnConstraints>
+            <ColumnConstraints minWidth="110" maxWidth="120"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+            <ColumnConstraints minWidth="110" maxWidth="120"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+          </columnConstraints>
+
+          <Label text="Nombre:"       style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+          <Label fx:id="lblNombre"    GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+          <Label text="Email:"        style="-fx-font-weight:bold;" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+          <Label fx:id="lblEmail"     GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+          <Label text="Nac.:"         style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+          <Label fx:id="lblNac"       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+          <Label text="Apodo:"        style="-fx-font-weight:bold;" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+          <Label fx:id="lblApodo"     GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+          <Label text="Especialidades:" style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+          <Label fx:id="lblEspecialidades" wrapText="true"
+                 GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="3"/>
+
+          <Label text="Trayectoria:"  style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+          <Label fx:id="lblTrayectoria" wrapText="true"
+                 GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="3"/>
+
+          <Label text="Obs. actuales:" style="-fx-font-weight:bold;" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+          <Label fx:id="lblObservaciones" wrapText="true"
+                 GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.columnSpan="3"/>
+        </GridPane>
+      </TitledPane>
+
+      <!-- Acciones de actualización -->
+      <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+
+        <!-- Tab 1: Nueva evaluación -->
+        <Tab text="Nueva Evaluacion">
+          <VBox spacing="10" style="-fx-padding:14;">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+              <Label text="Nivel:" style="-fx-font-weight:bold;" prefWidth="70"/>
+              <ComboBox fx:id="cbNivel" prefWidth="200" promptText="-- Selecciona --"/>
+            </HBox>
+            <Label text="Comentario:" style="-fx-font-weight:bold;"/>
+            <TextArea fx:id="taComentario" prefHeight="90" wrapText="true"
+                      promptText="Escribe aqui el comentario de la evaluacion..."/>
+            <Button text="Guardar evaluacion" onAction="#guardarEvaluacion"
+                    prefWidth="200" prefHeight="36"/>
+          </VBox>
+        </Tab>
+
+        <!-- Tab 2: Actualizar observaciones -->
+        <Tab text="Observaciones">
+          <VBox spacing="10" style="-fx-padding:14;">
+            <Label text="Nuevas observaciones (sustituye el texto actual):"
+                   style="-fx-font-weight:bold;"/>
+            <TextArea fx:id="taObservaciones" prefHeight="110" wrapText="true"
+                      promptText="Escribe aqui las observaciones generales del artista..."/>
+            <Button text="Guardar observaciones" onAction="#guardarObservaciones"
+                    prefWidth="210" prefHeight="36"/>
+          </VBox>
+        </Tab>
+      </TabPane>
+
+      <Label fx:id="lblMensaje" wrapText="true" style="-fx-font-weight:bold;"/>
+    </VBox>
+  </center>
+
+  <bottom>
+    <HBox alignment="CENTER_RIGHT" spacing="10">
+      <padding><Insets bottom="14" right="24" top="12" left="24"/></padding>
+      <Button text="Volver" onAction="#volver" prefWidth="110" prefHeight="36"/>
+    </HBox>
+  </bottom>
+</BorderPane>
