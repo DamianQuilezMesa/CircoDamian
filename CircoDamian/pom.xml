@@ -88,6 +88,13 @@
 					<groupId>xml-apis</groupId>
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
+				<!-- Log4j2 trae un segundo proveedor SLF4J que choca con el Logback
+				     de Spring Boot ("multiple SLF4J providers"). Lo excluimos para
+				     dejar únicamente Logback. -->
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-slf4j2-impl</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 	</dependencies>

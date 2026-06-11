@@ -56,6 +56,8 @@ public class GestionNumeroController implements Initializable {
 	@FXML
 	private Button btnGuardar;
 	@FXML
+	private Button btnEliminar;
+	@FXML
 	private Label lblMensaje;
 	@FXML
 	private Label lblTitulo;
@@ -147,6 +149,38 @@ public class GestionNumeroController implements Initializable {
 	private void limpiar(ActionEvent e) {
 		cbNumero.getSelectionModel().clearSelection();
 		limpiarFormulario();
+	}
+
+	/** Elimina el número seleccionado de forma independiente (CU5B). */
+	@FXML
+	private void eliminar(ActionEvent e) {
+		if (numeroEnEdicion == null) {
+			error("Selecciona un número primero.");
+			return;
+		}
+		Espectaculo espSel = cbEspectaculo.getValue();
+		Numero objetivo = numeroEnEdicion;
+
+		Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+				"¿Eliminar el número \"" + objetivo.getNombre() + "\"? Esta acción no se puede deshacer.",
+				ButtonType.YES, ButtonType.NO);
+		confirm.setTitle("Confirmar eliminación");
+		confirm.showAndWait().ifPresent(btn -> {
+			if (btn != ButtonType.YES)
+				return;
+			try {
+				espectaculoService.eliminarNumero(objetivo.getId());
+				new Alert(Alert.AlertType.INFORMATION, "Número eliminado correctamente.", ButtonType.OK).showAndWait();
+				if (espSel != null)
+					recargarNumerosEspectaculo(espSel.getId());
+				limpiarFormulario();
+			} catch (IllegalArgumentException ex) {
+				// Por ejemplo: el espectáculo necesita al menos 3 números
+				error(ex.getMessage());
+			} catch (Exception ex) {
+				error("No se pudo eliminar el número: " + ex.getMessage());
+			}
+		});
 	}
 
 	private void cargarNumero(Numero n) {

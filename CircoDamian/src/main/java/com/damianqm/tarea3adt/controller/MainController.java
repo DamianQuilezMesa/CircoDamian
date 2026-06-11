@@ -50,8 +50,6 @@ public class MainController implements Initializable {
 	private Button btnRegistrarIncidencia;
 	@FXML
 	private Button btnConsultarIncidencias;
-	@FXML
-	private Button btnResolverIncidencia;
 
 	// Dossiers MongoDB (Tarea 6)
 	@FXML
@@ -90,8 +88,8 @@ public class MainController implements Initializable {
 		// Incidencias: registrar y consultar para cualquier autenticado
 		mostrarBoton(btnRegistrarIncidencia, autenticado);
 		mostrarBoton(btnConsultarIncidencias, autenticado);
-		// Resolver: solo coordinación y admin
-		mostrarBoton(btnResolverIncidencia, sesionService.isCoordinacion());
+		// La resolución se realiza dentro de la propia vista de Consultar Incidencias
+		// (el panel de resolver solo aparece para Coordinación/Admin).
 
 		// Dossiers: solo coordinación y admin
 		mostrarBoton(btnActualizarDossier, sesionService.isCoordinacion());
@@ -151,11 +149,6 @@ public class MainController implements Initializable {
 
 	@FXML
 	private void irConsultarIncidencias(ActionEvent e) {
-		stageManager.switchScene(FxmlView.CONSULTAR_INCIDENCIAS);
-	}
-
-	@FXML
-	private void irResolverIncidencia(ActionEvent e) {
 		stageManager.switchScene(FxmlView.CONSULTAR_INCIDENCIAS);
 	}
 

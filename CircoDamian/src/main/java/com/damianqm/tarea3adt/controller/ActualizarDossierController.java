@@ -5,6 +5,7 @@ import com.damianqm.tarea3adt.modelo.Artista;
 import com.damianqm.tarea3adt.modelo.mongodb.Dossier;
 import com.damianqm.tarea3adt.modelo.mongodb.EntradaTrayectoria;
 import com.damianqm.tarea3adt.modelo.mongodb.Evaluacion;
+import com.damianqm.tarea3adt.modelo.mongodb.Observacion;
 import com.damianqm.tarea3adt.services.DossierService;
 import com.damianqm.tarea3adt.services.EspectaculoService;
 import com.damianqm.tarea3adt.view.FxmlView;
@@ -45,6 +46,8 @@ public class ActualizarDossierController implements Initializable {
 	private Label lblEspecialidades;
 	@FXML
 	private Label lblTrayectoria;
+	@FXML
+	private Label lblEvaluaciones;
 	@FXML
 	private Label lblObservaciones;
 	@FXML
@@ -105,27 +108,47 @@ public class ActualizarDossierController implements Initializable {
 		lblApodo.setText(d.getApodo() != null ? d.getApodo() : "—");
 		lblEspecialidades.setText(d.getEspecialidades().isEmpty() ? "—" : String.join(", ", d.getEspecialidades()));
 		lblTrayectoria.setText(formatearTrayectoria(d));
-		lblObservaciones
-				.setText(d.getObservaciones() != null && !d.getObservaciones().isBlank() ? d.getObservaciones() : "—");
+		lblEvaluaciones.setText(formatearEvaluaciones(d));
+		lblObservaciones.setText(formatearObservaciones(d));
 		lblMensaje.setText("");
 	}
 
+	private String formatearEvaluaciones(Dossier d) {
+		if (d.getEvaluaciones() == null || d.getEvaluaciones().isEmpty())
+			return "Sin evaluaciones aún";
+		StringBuilder sb = new StringBuilder();
+		for (Evaluacion ev : d.getEvaluaciones()) {
+			sb.append("• [").append(ev.getFecha()).append("] ").append(ev.getNivel()).append(" – ")
+					.append(ev.getComentario());
+			if (ev.getRealizadaPor() != null)
+				sb.append("  (por persona ").append(ev.getRealizadaPor().getIdPersona()).append(", ")
+						.append(ev.getRealizadaPor().getRol()).append(")");
+			sb.append("\n");
+		}
+		return sb.toString().trim();
+	}
+
+	private String formatearObservaciones(Dossier d) {
+		if (d.getObservaciones() == null || d.getObservaciones().isEmpty())
+			return "—";
+		StringBuilder sb = new StringBuilder();
+		for (Observacion o : d.getObservaciones()) {
+			sb.append("• [").append(o.getFecha()).append("] ").append(o.getTexto());
+			if (o.getAutor() != null && !o.getAutor().isBlank())
+				sb.append("  (").append(o.getAutor()).append(")");
+			sb.append("\n");
+		}
+		return sb.toString().trim();
+	}
+
 	private String formatearTrayectoria(Dossier d) {
-		if (d.getTrayectoria().isEmpty())
+		if (d.getTrayectoria() == null || d.getTrayectoria().isEmpty())
 			return "Sin números asignados aún";
 		StringBuilder sb = new StringBuilder();
 		for (EntradaTrayectoria e : d.getTrayectoria()) {
 			sb.append("• [Esp.").append(e.getIdEspectaculo()).append("] ").append(e.getNombreEspectaculo())
 					.append(" → Nº").append(e.getIdNumero()).append(" ").append(e.getNombreNumero()).append(" (orden ")
 					.append(e.getOrden()).append(", ").append(e.getDuracion()).append(" min)\n");
-		}
-		// También mostrar evaluaciones existentes
-		if (!d.getEvaluaciones().isEmpty()) {
-			sb.append("\nEvaluaciones (").append(d.getEvaluaciones().size()).append("):\n");
-			for (Evaluacion ev : d.getEvaluaciones()) {
-				sb.append("  [").append(ev.getFecha()).append("] ").append(ev.getNivel()).append(" – ")
-						.append(ev.getComentario()).append("\n");
-			}
 		}
 		return sb.toString().trim();
 	}
@@ -164,12 +187,14 @@ public class ActualizarDossierController implements Initializable {
 		}
 
 		try {
-			dossierService.actualizarObservaciones(artista.getId(), taObservaciones.getText());
-			ok("Observaciones actualizadas correctamente.");
+			dossierService.agregarObservacion(artista.getId(), taObservaciones.getText());
+			ok("Observación añadida correctamente.");
 			taObservaciones.clear();
 			mostrarDossier(artista.getId());
+		} catch (IllegalArgumentException ex) {
+			error(ex.getMessage());
 		} catch (Exception ex) {
-			error("Error al guardar las observaciones: " + ex.getMessage());
+			error("Error al guardar la observación: " + ex.getMessage());
 		}
 	}
 
@@ -180,6 +205,7 @@ public class ActualizarDossierController implements Initializable {
 		lblApodo.setText("—");
 		lblEspecialidades.setText("—");
 		lblTrayectoria.setText("—");
+		lblEvaluaciones.setText("—");
 		lblObservaciones.setText("—");
 		lblMensaje.setText("");
 	}

@@ -54,11 +54,15 @@ public class ConsultarIncidenciasController implements Initializable {
 	@FXML
 	private TableView<Incidencia> tablaIncidencias;
 	@FXML
+	private TableColumn<Incidencia, String> colId;
+	@FXML
 	private TableColumn<Incidencia, String> colFecha;
 	@FXML
 	private TableColumn<Incidencia, String> colTipo;
 	@FXML
 	private TableColumn<Incidencia, String> colEstado;
+	@FXML
+	private TableColumn<Incidencia, String> colReporta;
 	@FXML
 	private TableColumn<Incidencia, String> colEsp;
 	@FXML
@@ -148,7 +152,7 @@ public class ConsultarIncidenciasController implements Initializable {
 		cbEspectaculo.setConverter(new StringConverter<Espectaculo>() {
 			@Override
 			public String toString(Espectaculo e) {
-				return e == null ? "" : e.getNombre();
+				return e == null ? "" : "[" + e.getId() + "] " + e.getNombre();
 			}
 
 			@Override
@@ -157,15 +161,9 @@ public class ConsultarIncidenciasController implements Initializable {
 			}
 		});
 
-		cbEspectaculo.getSelectionModel().selectedItemProperty().addListener((obs, viejo, nuevo) -> {
-			cbNumero.getItems().clear();
-			cbNumero.getSelectionModel().clearSelection();
-			if (nuevo != null) {
-				cbNumero.setItems(
-						FXCollections.observableArrayList(espectaculoService.findNumerosPorEspectaculo(nuevo.getId())));
-			}
-		});
-
+		// El filtro de número es INDEPENDIENTE del de espectáculo: se cargan todos
+		// los números del circo, mostrando su id en el desplegable.
+		cbNumero.setItems(FXCollections.observableArrayList(espectaculoService.findAllNumeros()));
 		cbNumero.setPromptText("Todos");
 		cbNumero.setConverter(new StringConverter<Numero>() {
 			@Override
@@ -181,11 +179,21 @@ public class ConsultarIncidenciasController implements Initializable {
 	}
 
 	private void configurarTabla() {
+		colId.setCellValueFactory(d -> new SimpleStringProperty(
+				d.getValue().getId() != null ? String.valueOf(d.getValue().getId()) : ""));
 		colFecha.setCellValueFactory(d -> new SimpleStringProperty(
 				d.getValue().getFechaHora() != null ? d.getValue().getFechaHora().format(FMT) : ""));
 		colTipo.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getTipo().name()));
 		colEstado.setCellValueFactory(
 				d -> new SimpleStringProperty(d.getValue().isResuelta() ? "RESUELTA" : "PENDIENTE"));
+
+		// Persona que reporta (id lógico resuelto a nombre)
+		colReporta.setCellValueFactory(d -> {
+			Long id = d.getValue().getIdPersonaReporta();
+			if (id == null)
+				return new SimpleStringProperty("—");
+			return new SimpleStringProperty(id + " – " + personaService.findNombrePersonaById(id));
+		});
 
 		// ID + nombre en las columnas de espectáculo y número
 		colEsp.setCellValueFactory(d -> {
@@ -358,7 +366,7 @@ public class ConsultarIncidenciasController implements Initializable {
 		cbTipo.getSelectionModel().clearSelection();
 		cbEstado.setValue("Todas");
 		cbEspectaculo.getSelectionModel().clearSelection();
-		cbNumero.getItems().clear();
+		cbNumero.getSelectionModel().clearSelection();
 		dpDesde.setValue(null);
 		dpHasta.setValue(null);
 		lblMensaje.setText("");

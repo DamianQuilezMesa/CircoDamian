@@ -43,7 +43,7 @@ public class InformeXmlService {
 		Document doc = construirDocumentoDom(espectaculo);
 
 		// Calcular nombre del fichero
-		String nombreFichero = String.format("informe_espectaculo%02d.xml", espectaculo.getId());
+		String nombreFichero = nombreFichero(espectaculo.getId());
 
 		// Guardar en /ficheros (disco local)
 		Path rutaLocal = guardarEnDisco(doc, nombreFichero);
@@ -52,6 +52,34 @@ public class InformeXmlService {
 		existDbRepository.guardarInforme(nombreFichero, doc);
 
 		return rutaLocal;
+	}
+
+	// Devuelve el nombre del fichero del informe para un id de espectáculo.
+	private String nombreFichero(Long idEspectaculo) {
+		return String.format("informe_espectaculo%02d.xml", idEspectaculo);
+	}
+
+	// Indica si ya se ha exportado alguna vez el informe XML de este espectáculo
+	// (comprobando su existencia en la carpeta /ficheros).
+	public boolean existeXml(Long idEspectaculo) {
+		if (idEspectaculo == null)
+			return false;
+		return Files.exists(Paths.get(CARPETA_FICHEROS, nombreFichero(idEspectaculo)));
+	}
+
+	// Regenera el informe SOLO si ya existía previamente (mismo criterio que se usa
+	// al modificar un espectáculo). Es a prueba de fallos: si eXistDB no está
+	// disponible, el fichero local se regenera igualmente y NO se propaga el error,
+	// de modo que un eXistDB caído nunca bloquea la edición del espectáculo.
+	public void regenerarSiExiste(Espectaculo espectaculo) {
+		if (espectaculo == null || !existeXml(espectaculo.getId()))
+			return;
+		try {
+			generarYExportar(espectaculo);
+		} catch (Exception e) {
+			System.err.println("Aviso: no se pudo regenerar/subir el informe XML del espectáculo " + espectaculo.getId()
+					+ " (¿eXistDB arrancado?): " + e.getMessage());
+		}
 	}
 
 	private Document construirDocumentoDom(Espectaculo espectaculo) throws Exception {

@@ -68,10 +68,10 @@
 
           <Separator/>
           <HBox spacing="14" alignment="CENTER_LEFT">
-            <Button text="Guardar y continuar →" onAction="#siguiente"
-                    prefWidth="200" prefHeight="38" styleClass="btnGreen"
+            <Button text="Siguiente: añadir números →" onAction="#siguiente"
+                    prefWidth="240" prefHeight="38" styleClass="btnGreen"
                     style="-fx-font-size:13; -fx-font-weight:bold;"/>
-            <Label text="El espectáculo se guarda al pulsar este botón. Después gestionas sus números."
+            <Label text="Nada se guarda todavía. El espectáculo se persiste al pulsar «Guardar espectáculo» en el paso siguiente."
                    style="-fx-font-size:11; -fx-text-fill:#888;" wrapText="true" maxWidth="400"/>
           </HBox>
         </VBox>
@@ -154,6 +154,11 @@
           <HBox spacing="12" alignment="CENTER_LEFT">
             <Button text="← Volver al Paso 1" onAction="#volverPaso1"
                     prefHeight="36" prefWidth="160"/>
+            <Button text="💾 Guardar espectáculo" onAction="#guardarEspectaculo"
+                    prefHeight="36" prefWidth="220" styleClass="btnGreen"
+                    style="-fx-font-size:13; -fx-font-weight:bold;"/>
+            <Label text="Valida todo el conjunto (mínimo 3 números) y guarda en una sola operación."
+                   style="-fx-font-size:11; -fx-text-fill:#888;" wrapText="true" maxWidth="300"/>
           </HBox>
         </VBox>
 

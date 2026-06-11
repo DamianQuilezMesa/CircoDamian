@@ -77,13 +77,13 @@ public class PersonaService {
 			throw new IllegalArgumentException("El email ya está en uso.");
 
 		String nuevoNombre = nombre.trim();
-		String nuevoEmail  = email.trim().toLowerCase();
-		String nuevaNac    = nacionalidad.trim().toUpperCase();
+		String nuevoEmail = email.trim().toLowerCase();
+		String nuevaNac = nacionalidad.trim().toUpperCase();
 
-		boolean sinCambios = p.getNombre().equals(nuevoNombre)
-				&& p.getEmail().equals(nuevoEmail)
+		boolean sinCambios = p.getNombre().equals(nuevoNombre) && p.getEmail().equals(nuevoEmail)
 				&& p.getNacionalidad().equals(nuevaNac);
-		if (sinCambios) return p;
+		if (sinCambios)
+			return p;
 
 		p.setNombre(nuevoNombre);
 		p.setEmail(nuevoEmail);
@@ -91,7 +91,8 @@ public class PersonaService {
 		Persona saved = personaRepository.save(p);
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
 				"Modificación de Persona [id=" + saved.getId() + "] " + saved.getNombre());
-		dossierService.actualizarDatosPersonales(saved.getId(), saved.getNombre(), saved.getEmail(), saved.getNacionalidad());
+		dossierService.actualizarDatosPersonales(saved.getId(), saved.getNombre(), saved.getEmail(),
+				saved.getNacionalidad());
 		return saved;
 	}
 
@@ -102,9 +103,9 @@ public class PersonaService {
 		validarEspecialidades(especialidades);
 
 		String nuevoApodo = apodo != null && !apodo.isBlank() ? apodo.trim() : null;
-		boolean sinCambios = Objects.equals(a.getApodo(), nuevoApodo)
-				&& a.getEspecialidades().equals(especialidades);
-		if (sinCambios) return a;
+		boolean sinCambios = Objects.equals(a.getApodo(), nuevoApodo) && a.getEspecialidades().equals(especialidades);
+		if (sinCambios)
+			return a;
 
 		a.setApodo(nuevoApodo);
 		a.setEspecialidades(especialidades);
@@ -123,9 +124,9 @@ public class PersonaService {
 		validarSenior(senior, fechaSenior);
 
 		LocalDate nuevaFecha = senior ? fechaSenior : null;
-		boolean sinCambios = c.isSenior() == senior
-				&& Objects.equals(c.getFechaSenior(), nuevaFecha);
-		if (sinCambios) return c;
+		boolean sinCambios = c.isSenior() == senior && Objects.equals(c.getFechaSenior(), nuevaFecha);
+		if (sinCambios)
+			return c;
 
 		c.setSenior(senior);
 		c.setFechaSenior(nuevaFecha);
@@ -170,14 +171,13 @@ public class PersonaService {
 		return credencialesRepository.findByPersonaId(id);
 	}
 
-
 	@Transactional(readOnly = true)
 	public String findNombrePersonaById(Long id) {
-		if (id == null)  return "—";
-		if (id == -1L)   return "admin del sistema";
-		return personaRepository.findById(id)
-				.map(p -> p.getNombre())
-				.orElse("ID " + id);
+		if (id == null)
+			return "—";
+		if (id == -1L)
+			return "admin del sistema";
+		return personaRepository.findById(id).map(p -> p.getNombre()).orElse("ID " + id);
 	}
 
 	private void validarPersona(String nombre, String email, String nacionalidad) {

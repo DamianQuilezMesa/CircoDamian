@@ -3,3 +3,7 @@
 /log/
 *.class
 *.odb~
+# Artefactos generados en tiempo de ejecución (datos de DB embebidas y XML de informes)
+/db/*.odb
+/ficheros/*.db4o
+/ficheros/informe_espectaculo*.xml

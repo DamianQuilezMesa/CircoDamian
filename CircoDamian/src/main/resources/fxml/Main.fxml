@@ -58,11 +58,6 @@
               onAction="#irConsultarIncidencias" prefWidth="340" prefHeight="42"
               visible="false" managed="false" mnemonicParsing="true"/>
 
-      <!-- Coordinación y Admin -->
-      <Button fx:id="btnResolverIncidencia"   text="Resolver _Incidencia"
-              onAction="#irResolverIncidencia"   prefWidth="340" prefHeight="42"
-              visible="false" managed="false" mnemonicParsing="true"/>
-
       <!-- Dossiers MongoDB (Coordinación y Admin) -->
       <Button fx:id="btnActualizarDossier" text="_Dossier de Artista"
               onAction="#irActualizarDossier"   prefWidth="340" prefHeight="42"

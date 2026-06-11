@@ -1,0 +1,54 @@
+------------------------------------------------------------------------------------------------------------------------
+
+[2026-06-11 06:33:24 #1 server] 
+Server on port 6136 has started by 20400@DESKTOP-2SM1MN0
+
+[2026-06-11 06:38:58 #2 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\db\circo_incidencias.odb' has been recovered (tr. 1-6)
+
+[2026-06-11 06:38:58 #3 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\db\circo_incidencias.odb' is opened by 20400@DESKTOP-2SM1MN0
+
+[2026-06-11 06:38:58 #4 store] 
+Configuration path: C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\objectdb.conf
+
+[2026-06-11 06:50:36 #5 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\db\circo_incidencias.odb' is closed by 20400@DESKTOP-2SM1MN0
+
+[2026-06-11 06:50:36 #6 server] 
+Server on port 6136 has stopped by 20400@DESKTOP-2SM1MN0
+
+[2026-06-11 06:50:56 #7 server] 
+java.lang.NullPointerException: Cannot invoke "java.net.ServerSocket.close()" because "this.k" is null
+	at com.objectdb.o.SMR.m(SMR.java:421)
+	at com.objectdb.o.STI.actionPerformed(STI.java:263)
+	at java.desktop/java.awt.MenuItem.processActionEvent(MenuItem.java:692)
+	at java.desktop/java.awt.MenuItem.processEvent(MenuItem.java:651)
+	at java.desktop/java.awt.MenuComponent.dispatchEventImpl(MenuComponent.java:349)
+	at java.desktop/java.awt.MenuComponent.dispatchEvent(MenuComponent.java:338)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:728)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:702)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+
+[2026-06-11 07:02:18 #8 server] 
+java.lang.NullPointerException: Cannot invoke "java.net.ServerSocket.close()" because "this.k" is null
+	at com.objectdb.o.SMR.m(SMR.java:421)
+	at com.objectdb.o.STI.actionPerformed(STI.java:263)
+	at java.desktop/java.awt.MenuItem.processActionEvent(MenuItem.java:692)
+	at java.desktop/java.awt.MenuItem.processEvent(MenuItem.java:651)
+	at java.desktop/java.awt.MenuComponent.dispatchEventImpl(MenuComponent.java:349)
+	at java.desktop/java.awt.MenuComponent.dispatchEvent(MenuComponent.java:338)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:728)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:702)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+

@@ -23,8 +23,10 @@ public class IncidenciaRepository {
 	public IncidenciaRepository(@Value("${objectdb.url}") String url, @Value("${objectdb.username}") String username,
 			@Value("${objectdb.password}") String password) {
 		java.util.Map<String, String> props = new java.util.HashMap<>();
-		props.put("javax.persistence.jdbc.user", username);
-		props.put("javax.persistence.jdbc.password", password);
+		// ObjectDB Jakarta usa las claves 'jakarta.persistence.*' (no 'javax.*').
+		// Con el prefijo antiguo se ignoraban y la conexión entraba como 'anonymous'.
+		props.put("jakarta.persistence.jdbc.user", username);
+		props.put("jakarta.persistence.jdbc.password", password);
 		this.emf = Persistence.createEntityManagerFactory(url, props);
 	}
 
@@ -61,7 +63,10 @@ public class IncidenciaRepository {
 			inc.setResolucion(resolucion);
 			inc.setResuelta(true);
 
-			em.merge(inc); // cascade ALL persiste también la resolucion
+			// 'inc' ya está gestionado por el EntityManager (viene de em.find), por lo
+			// que NO se hace merge: al confirmar la transacción, el cascade ALL persiste
+			// la resolución UNA sola vez. Hacer además un merge sobre una entidad ya
+			// gestionada provocaba un doble guardado de la ResolucionIncidencia.
 			em.getTransaction().commit();
 		} catch (Exception e) {
 			if (em.getTransaction().isActive())

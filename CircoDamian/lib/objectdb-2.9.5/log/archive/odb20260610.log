@@ -1,0 +1,177 @@
+------------------------------------------------------------------------------------------------------------------------
+
+[2026-06-10 19:34:39 #1 server] 
+Server on port 6136 has started by 7720@DESKTOP-2SM1MN0
+
+[2026-06-10 20:06:05 #2 server] 
+Server on port 6136 has stopped by 7720@DESKTOP-2SM1MN0
+
+[2026-06-10 20:07:16 #3 server] 
+java.lang.NullPointerException: Cannot invoke "java.net.ServerSocket.close()" because "this.k" is null
+	at com.objectdb.o.SMR.m(SMR.java:421)
+	at com.objectdb.o.STI.actionPerformed(STI.java:263)
+	at java.desktop/java.awt.MenuItem.processActionEvent(MenuItem.java:692)
+	at java.desktop/java.awt.MenuItem.processEvent(MenuItem.java:651)
+	at java.desktop/java.awt.MenuComponent.dispatchEventImpl(MenuComponent.java:349)
+	at java.desktop/java.awt.MenuComponent.dispatchEvent(MenuComponent.java:338)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:728)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:702)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+
+------------------------------------------------------------------------------------------------------------------------
+
+[2026-06-10 20:11:20 #1 explorer] 
+[ObjectDB 2.9.5] javax.persistence.PersistenceException
+Attempt to open a database file 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' that is currently in use by another process (error 141)
+	at com.objectdb.Explorer$1.run(Explorer.java:57)
+	at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:318)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:723)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:702)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+Caused by: com.objectdb.o.UserException: Attempt to open a database file 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' that is currently in use by another process
+	at com.objectdb.o.MSG.a(MSG.java:64)
+	at com.objectdb.o.LFL.J(LFL.java:947)
+	at com.objectdb.o.LFL.x(LFL.java:904)
+	at com.objectdb.o.LFL.x(LFL.java:814)
+	at com.objectdb.o.DFL.<init>(DFL.java:241)
+	at com.objectdb.o.DMG.<init>(DMG.java:27)
+	at com.objectdb.o.MST.<init>(MST.java:127)
+	at com.objectdb.o.MST.ap(MST.java:109)
+	at com.objectdb.o.MSF.Zf(MSF.java:190)
+	at com.objectdb.o.OMF.s(OMF.java:819)
+	at com.objectdb.jpa.EMF.s(EMF.java:127)
+	at com.objectdb.o.OMF.x(OMF.java:725)
+	at com.objectdb.jpa.EMF.createEntityManager(EMF.java:145)
+	... 12 more
+
+------------------------------------------------------------------------------------------------------------------------
+
+[2026-06-10 20:11:49 #1 server] 
+Server on port 6136 has started by 7608@DESKTOP-2SM1MN0
+
+------------------------------------------------------------------------------------------------------------------------
+
+[2026-06-10 20:12:26 #1 explorer] 
+[ObjectDB 2.9.5] javax.persistence.PersistenceException
+Attempt to open a database file 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' that is currently in use by another process (error 141)
+	at com.objectdb.Explorer$1.run(Explorer.java:57)
+	at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:318)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:723)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:702)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+Caused by: com.objectdb.o.UserException: Attempt to open a database file 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' that is currently in use by another process
+	at com.objectdb.o.MSG.a(MSG.java:64)
+	at com.objectdb.o.LFL.J(LFL.java:947)
+	at com.objectdb.o.LFL.x(LFL.java:904)
+	at com.objectdb.o.LFL.x(LFL.java:814)
+	at com.objectdb.o.DFL.<init>(DFL.java:241)
+	at com.objectdb.o.DMG.<init>(DMG.java:27)
+	at com.objectdb.o.MST.<init>(MST.java:127)
+	at com.objectdb.o.MST.ap(MST.java:109)
+	at com.objectdb.o.MSF.Zf(MSF.java:190)
+	at com.objectdb.o.OMF.s(OMF.java:819)
+	at com.objectdb.jpa.EMF.s(EMF.java:127)
+	at com.objectdb.o.OMF.x(OMF.java:725)
+	at com.objectdb.jpa.EMF.createEntityManager(EMF.java:145)
+	... 12 more
+
+[2026-06-10 20:15:24 #2 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\db\circo_incidencias.odb' is opened by 7608@DESKTOP-2SM1MN0
+
+[2026-06-10 20:15:24 #3 store] 
+Configuration path: C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\objectdb.conf
+
+[2026-06-10 22:47:29 #4 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\db\circo_incidencias.odb' is closed by 7608@DESKTOP-2SM1MN0
+
+[2026-06-10 23:05:06 #5 server] 
+Server on port 6136 has stopped by 7608@DESKTOP-2SM1MN0
+
+[2026-06-10 23:05:08 #6 server] 
+Server on port 6136 has started by 7608@DESKTOP-2SM1MN0
+
+[2026-06-10 23:05:18 #7 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\db\circo_incidencias.odb' is opened by 7608@DESKTOP-2SM1MN0
+
+[2026-06-10 23:05:18 #8 store] 
+Configuration path: C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\objectdb.conf
+
+[2026-06-10 23:37:03 #9 server] 
+Server on port 6136 has stopped by 7608@DESKTOP-2SM1MN0
+
+------------------------------------------------------------------------------------------------------------------------
+
+[2026-06-11 06:25:24 #1 *] 
+[Close] java.lang.RuntimeException: Stack Trace
+	at com.objectdb.o.STH.t(STH.java:697)
+	at com.objectdb.o.CST.Za(CST.java:226)
+	at com.objectdb.o.CSF.Zd(CSF.java:120)
+	at com.objectdb.o.OMF.k(OMF.java:1021)
+	at com.objectdb.o.OMF.close(OMF.java:957)
+	at com.objectdb.o.CNC.Za(CNC.java:162)
+	at com.objectdb.o.EXA.b(EXA.java:100)
+	at com.objectdb.o.MainFrame$2.windowClosing(MainFrame.java:100)
+	at java.desktop/java.awt.Window.processWindowEvent(Window.java:1995)
+	at java.desktop/javax.swing.JFrame.processWindowEvent(JFrame.java:298)
+	at java.desktop/java.awt.Window.processEvent(Window.java:1954)
+	at java.desktop/java.awt.Component.dispatchEventImpl(Component.java:4958)
+	at java.desktop/java.awt.Container.dispatchEventImpl(Container.java:2318)
+	at java.desktop/java.awt.Window.dispatchEventImpl(Window.java:2671)
+	at java.desktop/java.awt.Component.dispatchEvent(Component.java:4790)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:725)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:702)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+
+[2026-06-11 06:25:24 #2 *] 
+[After Close] java.lang.RuntimeException: Stack Trace
+	at com.objectdb.o.STH.t(STH.java:697)
+	at com.objectdb.o.CST.D(CST.java:1027)
+	at com.objectdb.o.CST.o(CST.java:139)
+	at com.objectdb.o.CLS.B(CLS.java:322)
+	at com.objectdb.o.CLS.Zo(CLS.java:231)
+	at com.objectdb.o.NTS.f(NTS.java:201)
+	at com.objectdb.o.NTS.t(NTS.java:261)
+	at com.objectdb.o.CLS.Za(CLS.java:189)
+	at com.objectdb.o.CST.Za(CST.java:227)
+	at com.objectdb.o.CSF.Zd(CSF.java:120)
+	at com.objectdb.o.OMF.k(OMF.java:1021)
+	at com.objectdb.o.OMF.close(OMF.java:957)
+	at com.objectdb.o.CNC.Za(CNC.java:162)
+	at com.objectdb.o.EXA.b(EXA.java:100)
+	at com.objectdb.o.MainFrame$2.windowClosing(MainFrame.java:100)
+	at java.desktop/java.awt.Window.processWindowEvent(Window.java:1995)
+	at java.desktop/javax.swing.JFrame.processWindowEvent(JFrame.java:298)
+	at java.desktop/java.awt.Window.processEvent(Window.java:1954)
+	at java.desktop/java.awt.Component.dispatchEventImpl(Component.java:4958)
+	at java.desktop/java.awt.Container.dispatchEventImpl(Container.java:2318)
+	at java.desktop/java.awt.Window.dispatchEventImpl(Window.java:2671)
+	at java.desktop/java.awt.Component.dispatchEvent(Component.java:4790)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:725)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:702)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+

@@ -28,7 +28,7 @@ public class Dossier {
 	private List<String> especialidades = new ArrayList<>();
 	private List<EntradaTrayectoria> trayectoria = new ArrayList<>();
 	private List<Evaluacion> evaluaciones = new ArrayList<>();
-	private String observaciones;
+	private List<Observacion> observaciones = new ArrayList<>();
 
 	public Dossier() {
 	}
@@ -113,11 +113,11 @@ public class Dossier {
 		this.evaluaciones = evaluaciones;
 	}
 
-	public String getObservaciones() {
+	public List<Observacion> getObservaciones() {
 		return observaciones;
 	}
 
-	public void setObservaciones(String observaciones) {
+	public void setObservaciones(List<Observacion> observaciones) {
 		this.observaciones = observaciones;
 	}
 }

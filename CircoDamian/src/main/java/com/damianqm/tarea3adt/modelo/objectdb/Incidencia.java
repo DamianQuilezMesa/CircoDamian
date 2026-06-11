@@ -45,7 +45,7 @@ public class Incidencia {
 		this.resuelta = false;
 	}
 
-	// ── Getters / Setters ────────────────────────────────
+	// Getters / Setters 
 
 	public Long getId() {
 		return id;

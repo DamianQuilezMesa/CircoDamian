@@ -1,10 +1,11 @@
 package com.damianqm.tarea3adt.controller;
 
 import com.damianqm.tarea3adt.config.StageManager;
+import com.damianqm.tarea3adt.dto.EspectaculoBorrador;
+import com.damianqm.tarea3adt.dto.NumeroBorrador;
 import com.damianqm.tarea3adt.modelo.Artista;
 import com.damianqm.tarea3adt.modelo.Coordinacion;
 import com.damianqm.tarea3adt.modelo.Espectaculo;
-import com.damianqm.tarea3adt.modelo.Numero;
 import com.damianqm.tarea3adt.services.EspectaculoService;
 import com.damianqm.tarea3adt.services.PersonaService;
 import com.damianqm.tarea3adt.services.SesionService;
@@ -34,16 +35,19 @@ import java.util.stream.Collectors;
 /**
  * Gestión de espectáculos (CU5A + CU5B integrado).
  * <p>
- * Flujo: Paso 1 → datos básicos del espectáculo (nombre, fechas, coordinador).
- * Al guardar se persiste el espectáculo (nuevo o actualizado). Paso 2 → gestión
- * de sus números: crear, editar y eliminar números directamente asociados al
- * espectáculo.
+ * NUEVO FLUJO: el espectáculo y sus números se montan en memoria
+ * (EspectaculoBorrador) y NADA se persiste hasta pulsar "Guardar espectáculo".
+ * En ese momento el servicio valida el conjunto completo (datos básicos +
+ * mínimo 3 números + órdenes únicos + cada número con artista y duración
+ * válida) y lo persiste todo en una sola transacción. Si algo falla, no se
+ * guarda nada.
  * <p>
- * La relación Espectáculo → Número es 1:N; cada número pertenece a un único
- * espectáculo y tiene su orden dentro de él.
+ * Editar un espectáculo existente lo carga a un borrador, permite cambios y
+ * vuelve a validar el conjunto completo antes de re-persistir.
  */
 @Controller
 public class GestionEspectaculoController implements Initializable {
+
 	@FXML
 	private VBox panelPaso1;
 	@FXML
@@ -54,6 +58,7 @@ public class GestionEspectaculoController implements Initializable {
 	private DatePicker dpFin;
 	@FXML
 	private ComboBox<Coordinacion> cbCoordinador;
+
 	@FXML
 	private VBox panelPaso2;
 	@FXML
@@ -69,29 +74,31 @@ public class GestionEspectaculoController implements Initializable {
 	@FXML
 	private ListView<Artista> listArtistas;
 	@FXML
-	private TableView<Numero> tablaNumeros;
+	private TableView<NumeroBorrador> tablaNumeros;
 	@FXML
-	private TableColumn<Numero, Integer> colOrden;
+	private TableColumn<NumeroBorrador, Integer> colOrden;
 	@FXML
-	private TableColumn<Numero, String> colNombre;
+	private TableColumn<NumeroBorrador, String> colNombre;
 	@FXML
-	private TableColumn<Numero, String> colDuracion;
+	private TableColumn<NumeroBorrador, String> colDuracion;
 	@FXML
-	private TableColumn<Numero, String> colArtistas;
+	private TableColumn<NumeroBorrador, String> colArtistas;
 	@FXML
 	private Button btnGuardarNumero;
 	@FXML
 	private ComboBox<Espectaculo> cbEspectaculo;
 	@FXML
 	private Label lblMensaje;
-	/** Espectáculo que se está editando (nunca null en el Paso 2). */
-	private Espectaculo espActual = null;
 
-	/** Número cargado en el subformulario para modificar (null = crear nuevo). */
-	private Numero numeroEnEdicion = null;
+	/** Borrador en memoria del espectáculo en construcción/edición. */
+	private EspectaculoBorrador borrador = new EspectaculoBorrador();
 
-	/** Lista observable de números del espectáculo (mostrada en la tabla). */
-	private final ObservableList<Numero> numerosObservable = FXCollections.observableArrayList();
+	/** Número del borrador cargado en el subformulario (null = crear nuevo). */
+	private NumeroBorrador numeroEnEdicion = null;
+
+	/** Lista observable de números del borrador (mostrada en la tabla). */
+	private final ObservableList<NumeroBorrador> numerosObservable = FXCollections.observableArrayList();
+
 	@Autowired
 	private EspectaculoService espectaculoService;
 	@Autowired
@@ -101,7 +108,6 @@ public class GestionEspectaculoController implements Initializable {
 	@Lazy
 	@Autowired
 	private StageManager stageManager;
-	// Inicialización
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -110,7 +116,6 @@ public class GestionEspectaculoController implements Initializable {
 		configurarListaArtistas();
 		mostrarPaso(1);
 
-		// Si el usuario es Coordinación (no Admin) se fija como coordinador
 		if (sesionService.isCoordinacion() && !sesionService.isAdmin()) {
 			Long id = sesionService.getUsuarioActual().getPersona().getId();
 			personaService.findCoordinacionById(id).ifPresent(coord -> {
@@ -124,52 +129,53 @@ public class GestionEspectaculoController implements Initializable {
 				cargarEspectaculo(nuevo);
 		});
 	}
-	// Paso 1: datos básicos del espectáculo
 
-	/** Valida y persiste el espectáculo; si todo va bien pasa al Paso 2. */
+	// PASO 1: datos básicos
+
+	/**
+	 * Pasa al Paso 2 guardando los datos básicos en el borrador (sin persistir).
+	 */
 	@FXML
 	private void siguiente(ActionEvent e) {
 		try {
-			Long idEx = espActual != null ? espActual.getId() : null;
 			Long idCoord = cbCoordinador.getValue() != null ? cbCoordinador.getValue().getId() : null;
-
+			// Validación de datos básicos contra BD (nombre único, fechas, coordinador)
 			espectaculoService.validarDatosEspectaculo(txtNombreEsp.getText().trim(), dpInicio.getValue(),
-					dpFin.getValue(), idCoord, idEx);
+					dpFin.getValue(), idCoord, borrador.getId());
 
-			espActual = espectaculoService.persistirEspectaculo(txtNombreEsp.getText().trim(), dpInicio.getValue(),
-					dpFin.getValue(), idCoord, idEx);
+			// Guardar en el borrador en memoria (NO en BD)
+			borrador.setNombre(txtNombreEsp.getText().trim());
+			borrador.setFechaInicio(dpInicio.getValue());
+			borrador.setFechaFin(dpFin.getValue());
+			borrador.setCoordinador(cbCoordinador.getValue());
 
-			recargarNumeros();
-			lblEspActual.setText("Espectáculo: " + espActual.getNombre());
+			lblEspActual.setText(
+					"Espectáculo: " + borrador.getNombre() + (borrador.esNuevo() ? "  (sin guardar)" : "  (editando)"));
 			mostrarPaso(2);
 			modoNuevoNumero();
 			actualizarContador();
-			ok("Espectáculo guardado. Gestiona sus números a continuación.");
+			ok("Datos básicos listos. Añade los números (mínimo 3) y pulsa «Guardar espectáculo».");
 		} catch (IllegalArgumentException ex) {
 			error(ex.getMessage());
 		}
 	}
 
-	/** Limpia el formulario y pone la pantalla en modo creación. */
+	/** Limpia todo y empieza un espectáculo nuevo en memoria. */
 	@FXML
 	private void nuevoEspectaculo(ActionEvent e) {
-		espActual = null;
+		borrador = new EspectaculoBorrador();
 		numerosObservable.clear();
 		limpiarPaso1();
 		cbEspectaculo.getSelectionModel().clearSelection();
 		mostrarPaso(1);
 		lblMensaje.setText("");
 	}
-	// Paso 2: gestión de números
 
-	/** Guarda el número del subformulario (crea o modifica según el modo). */
+	// PASO 2: números en memoria
+
+	/** Añade o actualiza un número EN EL BORRADOR (en memoria, sin tocar BD). */
 	@FXML
 	private void guardarNumero(ActionEvent e) {
-		if (espActual == null) {
-			error("Primero guarda el espectáculo.");
-			return;
-		}
-
 		String nombre = txtNombreNum.getText().trim();
 		String durStr = txtDuracion.getText().trim().replace(",", ".");
 		String ordenStr = txtOrden.getText().trim();
@@ -195,60 +201,76 @@ public class GestionEspectaculoController implements Initializable {
 		try {
 			double dur = Double.parseDouble(durStr);
 			int orden = Integer.parseInt(ordenStr);
-			Set<Long> idsArts = sel.stream().map(Artista::getId).collect(Collectors.toSet());
+
+			// Validar duración x,0 / x,5
+			double dec = dur - Math.floor(dur);
+			if (dur <= 0 || (Math.abs(dec) > 0.01 && Math.abs(dec - 0.5) > 0.01)) {
+				error("La duración solo admite x,0 o x,5 (ej: 3,0 o 2,5).");
+				return;
+			}
+
+			// Comprobar orden único dentro del borrador
+			for (NumeroBorrador nb : borrador.getNumeros()) {
+				if (nb != numeroEnEdicion && nb.getOrden() == orden) {
+					error("Ya existe un número con el orden " + orden + " en este espectáculo.");
+					return;
+				}
+			}
+
+			Set<Artista> artistas = new HashSet<>(sel);
 
 			if (numeroEnEdicion == null) {
-				espectaculoService.crearNumero(espActual.getId(), nombre, dur, orden, idsArts);
-				ok("Número '" + nombre + "' creado con orden " + orden + ".");
+				// Nuevo número en el borrador
+				NumeroBorrador nb = new NumeroBorrador(null, nombre, dur, orden, artistas);
+				borrador.getNumeros().add(nb);
+				ok("Número '" + nombre + "' añadido (orden " + orden + "). Sin guardar todavía.");
 			} else {
-				espectaculoService.modificarNumero(numeroEnEdicion.getId(), nombre, dur, orden, idsArts);
-				ok("Número '" + nombre + "' actualizado.");
+				// Actualizar el número en edición
+				numeroEnEdicion.setNombre(nombre);
+				numeroEnEdicion.setDuracion(dur);
+				numeroEnEdicion.setOrden(orden);
+				numeroEnEdicion.setArtistas(artistas);
+				ok("Número '" + nombre + "' actualizado en memoria.");
 			}
 			recargarNumeros();
 			actualizarContador();
 			modoNuevoNumero();
 		} catch (NumberFormatException ex) {
 			error("Duración u orden inválidos. Usa el formato correcto (ej: 8,5 / 1).");
-		} catch (IllegalArgumentException ex) {
-			error(ex.getMessage());
 		}
 	}
 
-	/**
-	 * Carga el número seleccionado en la tabla en el subformulario para editarlo.
-	 */
+	/** Carga un número del borrador en el subformulario para editarlo. */
 	@FXML
 	private void editarNumero(ActionEvent e) {
-		Numero sel = tablaNumeros.getSelectionModel().getSelectedItem();
+		NumeroBorrador sel = tablaNumeros.getSelectionModel().getSelectedItem();
 		if (sel == null) {
 			error("Selecciona un número de la tabla para editar.");
 			return;
 		}
 
-		espectaculoService.findNumeroByIdConArtistas(sel.getId()).ifPresent(n -> {
-			numeroEnEdicion = n;
-			txtNombreNum.setText(n.getNombre());
-			txtDuracion.setText(n.getDuracionFormateada());
-			txtOrden.setText(String.valueOf(n.getOrden()));
+		numeroEnEdicion = sel;
+		txtNombreNum.setText(sel.getNombre());
+		txtDuracion.setText(sel.getDuracionFormateada());
+		txtOrden.setText(String.valueOf(sel.getOrden()));
 
-			listArtistas.getSelectionModel().clearSelection();
-			for (Artista a : listArtistas.getItems()) {
-				for (Artista asig : n.getArtistas()) {
-					if (asig.getId().equals(a.getId())) {
-						listArtistas.getSelectionModel().select(a);
-						break;
-					}
+		listArtistas.getSelectionModel().clearSelection();
+		for (Artista a : listArtistas.getItems()) {
+			for (Artista asig : sel.getArtistas()) {
+				if (asig.getId().equals(a.getId())) {
+					listArtistas.getSelectionModel().select(a);
+					break;
 				}
 			}
-			btnGuardarNumero.setText("Actualizar número");
-			ok("Número '" + n.getNombre() + "' cargado. Modifica y pulsa Actualizar.");
-		});
+		}
+		btnGuardarNumero.setText("Actualizar número");
+		ok("Número '" + sel.getNombre() + "' cargado. Modifica y pulsa Actualizar.");
 	}
 
-	/** Elimina el número seleccionado (solo si el espectáculo tiene >3). */
+	/** Elimina un número del borrador (en memoria). */
 	@FXML
 	private void eliminarNumero(ActionEvent e) {
-		Numero sel = tablaNumeros.getSelectionModel().getSelectedItem();
+		NumeroBorrador sel = tablaNumeros.getSelectionModel().getSelectedItem();
 		if (sel == null) {
 			error("Selecciona un número de la tabla para eliminarlo.");
 			return;
@@ -259,44 +281,59 @@ public class GestionEspectaculoController implements Initializable {
 		confirm.setTitle("Confirmar eliminación");
 		confirm.showAndWait().ifPresent(btn -> {
 			if (btn == ButtonType.YES) {
-				try {
-					espectaculoService.eliminarNumero(sel.getId());
-					recargarNumeros();
-					actualizarContador();
-					modoNuevoNumero();
-					ok("Número '" + sel.getNombre() + "' eliminado.");
-				} catch (IllegalArgumentException ex) {
-					error(ex.getMessage());
-				}
+				borrador.getNumeros().remove(sel);
+				recargarNumeros();
+				actualizarContador();
+				modoNuevoNumero();
+				ok("Número '" + sel.getNombre() + "' eliminado del borrador.");
 			}
 		});
 	}
 
-	/** Limpia el subformulario de número para crear uno nuevo. */
+	/** Limpia el subformulario de número. */
 	@FXML
 	private void nuevoNumero(ActionEvent e) {
 		modoNuevoNumero();
 	}
 
-	/** Vuelve al Paso 1 sin perder el espectáculo en edición. */
+	/** Vuelve al Paso 1 conservando el borrador. */
 	@FXML
 	private void volverPaso1(ActionEvent e) {
-		if (espActual != null && numerosObservable.size() < 3) {
-			int faltan = 3 - numerosObservable.size();
-			Alert aviso = new Alert(Alert.AlertType.WARNING,
-					"El espectáculo '" + espActual.getNombre() + "' solo tiene " + numerosObservable.size()
-							+ " número(s). Faltan " + faltan + " para el mínimo de 3.\n\n"
-							+ "Recuerda añadirlos antes de salir al menú principal.",
-					ButtonType.OK);
-			aviso.setTitle("Mínimo de números no alcanzado");
-			aviso.showAndWait();
-		}
 		mostrarPaso(1);
 	}
-	// Helpers de configuración UI
+
+	/**
+	 * GUARDA EL ESPECTÁCULO COMPLETO: valida todo el conjunto y persiste en una
+	 * sola transacción. Solo aquí se toca la base de datos.
+	 */
+	@FXML
+	private void guardarEspectaculo(ActionEvent e) {
+		try {
+			Espectaculo guardado = espectaculoService.guardarEspectaculoCompleto(borrador);
+
+			// Recargar el combo de espectáculos y dejar el borrador sincronizado
+			refrescarComboEspectaculos();
+			borrador = espectaculoService.cargarBorrador(guardado.getId());
+			recargarNumeros();
+			actualizarContador();
+			lblEspActual.setText("Espectáculo: " + borrador.getNombre() + "  (guardado)");
+
+			Alert info = new Alert(
+					Alert.AlertType.INFORMATION, "Espectáculo '" + guardado.getNombre()
+							+ "' guardado correctamente con " + guardado.getNumeros().size() + " números.",
+					ButtonType.OK);
+			info.setTitle("Guardado correcto");
+			info.showAndWait();
+			ok("Espectáculo guardado correctamente.");
+		} catch (IllegalArgumentException ex) {
+			error(ex.getMessage());
+		}
+	}
+
+	// Helpers UI
 
 	private void configurarCombos() {
-		cbEspectaculo.setItems(FXCollections.observableArrayList(espectaculoService.findAll()));
+		refrescarComboEspectaculos();
 		cbEspectaculo.setConverter(new StringConverter<Espectaculo>() {
 			@Override
 			public String toString(Espectaculo e) {
@@ -312,6 +349,7 @@ public class GestionEspectaculoController implements Initializable {
 			}
 		});
 		cbEspectaculo.setPromptText("-- Selecciona para modificar --");
+
 		cbCoordinador.setItems(FXCollections.observableArrayList(personaService.findAllCoordinadores()));
 		cbCoordinador.setConverter(new StringConverter<Coordinacion>() {
 			@Override
@@ -329,6 +367,10 @@ public class GestionEspectaculoController implements Initializable {
 		cbCoordinador.setPromptText("-- Selecciona coordinador --");
 		cbCoordinador.setButtonCell(crearCeldaCoordinador());
 		cbCoordinador.setCellFactory(lv -> crearCeldaCoordinador());
+	}
+
+	private void refrescarComboEspectaculos() {
+		cbEspectaculo.setItems(FXCollections.observableArrayList(espectaculoService.findAll()));
 	}
 
 	private void configurarTablaNumeros() {
@@ -388,34 +430,29 @@ public class GestionEspectaculoController implements Initializable {
 		};
 	}
 
+	/** Carga un espectáculo existente a borrador para editarlo. */
 	private void cargarEspectaculo(Espectaculo esp) {
-		espActual = esp;
-		numerosObservable.clear();
-		txtNombreEsp.setText(esp.getNombre());
-		dpInicio.setValue(esp.getFechaInicio());
-		dpFin.setValue(esp.getFechaFin());
-		cbCoordinador.getSelectionModel().select(esp.getCoordinador());
+		borrador = espectaculoService.cargarBorrador(esp.getId());
+		numerosObservable.setAll(borrador.getNumeros());
+		txtNombreEsp.setText(borrador.getNombre());
+		dpInicio.setValue(borrador.getFechaInicio());
+		dpFin.setValue(borrador.getFechaFin());
+		if (!cbCoordinador.isDisabled())
+			cbCoordinador.getSelectionModel().select(borrador.getCoordinador());
 		mostrarPaso(1);
-		ok("Seleccionado: '" + esp.getNombre() + "'. Pulsa Siguiente para editar.");
+		ok("Seleccionado: '" + esp.getNombre() + "'. Pulsa Siguiente para editar sus datos y números.");
 	}
 
 	private void recargarNumeros() {
-		if (espActual == null)
-			return;
-		List<Numero> nums = espectaculoService.findNumerosPorEspectaculo(espActual.getId());
-		numerosObservable.setAll(nums);
+		numerosObservable.setAll(borrador.getNumeros());
+		numerosObservable.sort(Comparator.comparingInt(NumeroBorrador::getOrden));
 	}
 
 	private void modoNuevoNumero() {
 		numeroEnEdicion = null;
 		txtNombreNum.clear();
 		txtDuracion.clear();
-		if (espActual != null) {
-			int sig = espectaculoService.siguienteOrden(espActual.getId());
-			txtOrden.setText(String.valueOf(sig));
-		} else {
-			txtOrden.clear();
-		}
+		txtOrden.setText(String.valueOf(borrador.siguienteOrden()));
 		listArtistas.getSelectionModel().clearSelection();
 		if (btnGuardarNumero != null)
 			btnGuardarNumero.setText("Añadir número");
@@ -430,7 +467,7 @@ public class GestionEspectaculoController implements Initializable {
 		else if (faltan > 0)
 			texto = total + " número(s) — faltan " + faltan + " para el mínimo.";
 		else
-			texto = total + " número(s). ✓";
+			texto = total + " número(s). ✓ Listo para guardar.";
 		lblContador.setText(texto);
 		lblContador.setStyle(total >= 3 ? "-fx-text-fill:#27ae60; -fx-font-weight:bold;"
 				: "-fx-text-fill:#e67e22; -fx-font-weight:bold;");
@@ -462,14 +499,12 @@ public class GestionEspectaculoController implements Initializable {
 		lblMensaje.setText(m);
 	}
 
+	/**
+	 * Volver al menú. Como nada se persiste hasta "Guardar espectáculo", si hay
+	 * cambios sin guardar simplemente se descartan (avisando al usuario).
+	 */
 	@FXML
 	private void volver(ActionEvent e) {
-		if (espActual != null && numerosObservable.size() < 3) {
-			int faltan = 3 - numerosObservable.size();
-			error("No puedes salir: el espectáculo '" + espActual.getNombre() + "' tiene solo "
-					+ numerosObservable.size() + " número(s). Añade " + faltan + " más antes de salir.");
-			return;
-		}
 		stageManager.switchScene(FxmlView.MAIN);
 	}
 }

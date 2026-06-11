@@ -1,0 +1,51 @@
+------------------------------------------------------------------------------------------------------------------------
+
+[2026-05-21 01:05:50 #1 explorer] 
+[ObjectDB 2.9.5] javax.persistence.PersistenceException
+Attempt to open a database file 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' that is currently in use by another process (error 141)
+	at com.objectdb.Explorer$1.run(Explorer.java:57)
+	at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:318)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:723)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:702)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+Caused by: com.objectdb.o.UserException: Attempt to open a database file 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' that is currently in use by another process
+	at com.objectdb.o.MSG.a(MSG.java:64)
+	at com.objectdb.o.LFL.J(LFL.java:947)
+	at com.objectdb.o.LFL.x(LFL.java:904)
+	at com.objectdb.o.LFL.x(LFL.java:814)
+	at com.objectdb.o.DFL.<init>(DFL.java:241)
+	at com.objectdb.o.DMG.<init>(DMG.java:27)
+	at com.objectdb.o.MST.<init>(MST.java:127)
+	at com.objectdb.o.MST.ap(MST.java:109)
+	at com.objectdb.o.MSF.Zf(MSF.java:190)
+	at com.objectdb.o.OMF.s(OMF.java:819)
+	at com.objectdb.jpa.EMF.s(EMF.java:127)
+	at com.objectdb.o.OMF.x(OMF.java:725)
+	at com.objectdb.jpa.EMF.createEntityManager(EMF.java:145)
+	... 12 more
+
+[2026-05-21 01:06:17 #2 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' is opened by 11448@DESKTOP-2SM1MN0
+
+[2026-05-21 01:06:17 #3 store] 
+Configuration path: C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\objectdb.conf
+
+------------------------------------------------------------------------------------------------------------------------
+
+[2026-05-21 01:09:50 #1 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' has been recovered (tr. 13-13)
+
+[2026-05-21 01:09:50 #2 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' is opened by 25516@DESKTOP-2SM1MN0
+
+[2026-05-21 01:09:50 #3 store] 
+Configuration path: C:\Users\Dams\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\objectdb.conf
+
+[2026-05-21 01:10:12 #4 store] 
+Database 'C:\Users\Dams\git\CircoDamian\CircoDamian\db\circo_incidencias.odb' is closed by 25516@DESKTOP-2SM1MN0
+

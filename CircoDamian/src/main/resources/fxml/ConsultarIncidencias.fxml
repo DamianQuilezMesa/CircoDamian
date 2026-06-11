@@ -69,9 +69,11 @@
         <!-- Tabla — altura fija para que el panel de detalle tenga espacio -->
         <TableView fx:id="tablaIncidencias" prefHeight="280" minHeight="150">
           <columns>
+            <TableColumn fx:id="colId"      text="Id"           prefWidth="50"/>
             <TableColumn fx:id="colFecha"   text="Fecha"        prefWidth="120"/>
             <TableColumn fx:id="colTipo"    text="Tipo"         prefWidth="100"/>
             <TableColumn fx:id="colEstado"  text="Estado"       prefWidth="90"/>
+            <TableColumn fx:id="colReporta" text="Reportada por" prefWidth="150"/>
             <TableColumn fx:id="colEsp"     text="Espectáculo"  prefWidth="180"/>
             <TableColumn fx:id="colNum"     text="Número"       prefWidth="160"/>
             <TableColumn fx:id="colDesc"    text="Descripción"  prefWidth="370"/>

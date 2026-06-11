@@ -7,6 +7,7 @@ public class Evaluacion {
 	private String comentario;
 	private String nivel;
 	private String fecha;
+	private RealizadaPor realizadaPor;
 
 	public Evaluacion() {
 	}
@@ -15,6 +16,21 @@ public class Evaluacion {
 		this.comentario = comentario;
 		this.nivel = nivel;
 		this.fecha = fecha;
+	}
+
+	public Evaluacion(String comentario, String nivel, String fecha, RealizadaPor realizadaPor) {
+		this.comentario = comentario;
+		this.nivel = nivel;
+		this.fecha = fecha;
+		this.realizadaPor = realizadaPor;
+	}
+
+	public RealizadaPor getRealizadaPor() {
+		return realizadaPor;
+	}
+
+	public void setRealizadaPor(RealizadaPor realizadaPor) {
+		this.realizadaPor = realizadaPor;
 	}
 
 	public String getComentario() {

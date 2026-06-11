@@ -83,6 +83,9 @@
           <Button fx:id="btnGuardar" text="Guardar cambios" onAction="#guardar"
                   prefHeight="36" prefWidth="180" styleClass="btnGreen"
                   style="-fx-font-size:13; -fx-font-weight:bold;"/>
+          <Button fx:id="btnEliminar" text="Eliminar número" onAction="#eliminar"
+                  prefHeight="36" prefWidth="180"
+                  style="-fx-font-size:13; -fx-font-weight:bold; -fx-background-color:#c0392b; -fx-text-fill:white;"/>
         </HBox>
       </VBox>
 
