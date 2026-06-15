@@ -56,8 +56,6 @@ public class GestionNumeroController implements Initializable {
 	@FXML
 	private Button btnGuardar;
 	@FXML
-	private Button btnEliminar;
-	@FXML
 	private Label lblMensaje;
 	@FXML
 	private Label lblTitulo;
@@ -151,34 +149,39 @@ public class GestionNumeroController implements Initializable {
 		limpiarFormulario();
 	}
 
-	/** Elimina el número seleccionado de forma independiente (CU5B). */
+	/**
+	 * Elimina el número seleccionado. El service rechaza el borrado si el
+	 * espectáculo se quedaría con menos de 3 números, y registra el log de tipo
+	 * BORRADO. La relación espectáculo-número se mantiene intacta.
+	 */
 	@FXML
 	private void eliminar(ActionEvent e) {
 		if (numeroEnEdicion == null) {
-			error("Selecciona un número primero.");
+			error("Selecciona primero un número para eliminarlo.");
 			return;
 		}
-		Espectaculo espSel = cbEspectaculo.getValue();
+
 		Numero objetivo = numeroEnEdicion;
+		Espectaculo espSel = cbEspectaculo.getValue();
 
 		Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
 				"¿Eliminar el número \"" + objetivo.getNombre() + "\"? Esta acción no se puede deshacer.",
 				ButtonType.YES, ButtonType.NO);
-		confirm.setTitle("Confirmar eliminación");
+		confirm.setTitle("Confirmar eliminación de número");
 		confirm.showAndWait().ifPresent(btn -> {
-			if (btn != ButtonType.YES)
-				return;
-			try {
-				espectaculoService.eliminarNumero(objetivo.getId());
-				new Alert(Alert.AlertType.INFORMATION, "Número eliminado correctamente.", ButtonType.OK).showAndWait();
-				if (espSel != null)
-					recargarNumerosEspectaculo(espSel.getId());
-				limpiarFormulario();
-			} catch (IllegalArgumentException ex) {
-				// Por ejemplo: el espectáculo necesita al menos 3 números
-				error(ex.getMessage());
-			} catch (Exception ex) {
-				error("No se pudo eliminar el número: " + ex.getMessage());
+			if (btn == ButtonType.YES) {
+				try {
+					espectaculoService.eliminarNumero(objetivo.getId());
+					new Alert(Alert.AlertType.INFORMATION, "Número eliminado correctamente.", ButtonType.OK)
+							.showAndWait();
+					if (espSel != null)
+						recargarNumerosEspectaculo(espSel.getId());
+					limpiarFormulario();
+				} catch (IllegalArgumentException ex) {
+					error(ex.getMessage());
+				} catch (Exception ex) {
+					error("No se pudo eliminar el número: " + ex.getMessage());
+				}
 			}
 		});
 	}

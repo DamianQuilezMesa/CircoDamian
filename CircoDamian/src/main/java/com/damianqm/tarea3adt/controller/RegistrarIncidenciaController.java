@@ -68,14 +68,15 @@ public class RegistrarIncidenciaController implements Initializable {
 			}
 		});
 
-		// Los números se cargan de forma INDEPENDIENTE del espectáculo: una incidencia
-		// puede asociarse solo a un número, solo a un espectáculo, a ambos o a ninguno.
-		cbNumero.setItems(FXCollections.observableArrayList(espectaculoService.findAllNumeros()));
 		cbNumero.setPromptText("-- Ninguno (opcional) --");
 		cbNumero.setConverter(new StringConverter<Numero>() {
 			@Override
 			public String toString(Numero n) {
-				return n == null ? "" : "[" + n.getId() + "] " + n.getNombre();
+				if (n == null)
+					return "";
+				// Muestra el id del número y, como contexto, a qué espectáculo pertenece
+				String esp = n.getEspectaculo() != null ? " (Esp. " + n.getEspectaculo().getId() + ")" : "";
+				return "[" + n.getId() + "] " + n.getNombre() + esp;
 			}
 
 			@Override
@@ -83,6 +84,11 @@ public class RegistrarIncidenciaController implements Initializable {
 				return null;
 			}
 		});
+
+		// Los dos combos se cargan de forma INDEPENDIENTE: el de números muestra
+		// TODOS los números, sin necesidad de elegir antes un espectáculo. Así se
+		// puede registrar una incidencia asociada solo a un número.
+		cbNumero.setItems(FXCollections.observableArrayList(espectaculoService.findAllNumeros()));
 
 		// Contador de caracteres en descripción
 		taDescripcion.textProperty().addListener((obs, viejo, nuevo) -> {
@@ -125,7 +131,6 @@ public class RegistrarIncidenciaController implements Initializable {
 		cbTipo.getSelectionModel().clearSelection();
 		taDescripcion.clear();
 		cbEspectaculo.getSelectionModel().clearSelection();
-		// No vaciamos la lista de números (es independiente); solo deseleccionamos.
 		cbNumero.getSelectionModel().clearSelection();
 	}
 

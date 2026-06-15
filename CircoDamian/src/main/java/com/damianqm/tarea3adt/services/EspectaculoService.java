@@ -54,8 +54,10 @@ public class EspectaculoService {
 		Optional<Espectaculo> opt = espectaculoRepository.findById(id);
 		if (opt.isPresent()) {
 			Espectaculo esp = opt.get();
-			List<Numero> numeros = numeroRepository.findByEspectaculoIdConArtistas(esp.getId());
-			esp.setNumeros(numeros);
+			// Forzar la carga de números y artistas sin reemplazar la colección
+			// (setNumeros sobre una colección con orphanRemoval puede provocar
+			// "collection no longer referenced" al hacer flush).
+			esp.getNumeros().forEach(n -> n.getArtistas().size());
 		}
 		return opt;
 	}
@@ -65,7 +67,11 @@ public class EspectaculoService {
 		return numeroRepository.findByEspectaculoIdConArtistas(idEspectaculo);
 	}
 
-	/** Todos los números del circo, independientemente del espectáculo. */
+	/**
+	 * Todos los números de todos los espectáculos, ordenados por id. Se usa para
+	 * poder elegir un número en las incidencias SIN tener que seleccionar antes su
+	 * espectáculo (los selects de número y espectáculo son independientes).
+	 */
 	@Transactional(readOnly = true)
 	public List<Numero> findAllNumeros() {
 		return numeroRepository.findAll();
@@ -173,101 +179,154 @@ public class EspectaculoService {
 
 		boolean esNuevo = b.esNuevo();
 		Espectaculo esp;
+		String login = sesionService.getLoginActual();
 
-		if (esNuevo) {
-			esp = new Espectaculo(b.getNombre().trim(), b.getFechaInicio(), b.getFechaFin(), coord);
-		} else {
-			esp = espectaculoRepository.findById(b.getId())
-					.orElseThrow(() -> new IllegalArgumentException("Espectáculo no encontrado."));
-			esp.setNombre(b.getNombre().trim());
-			esp.setFechaInicio(b.getFechaInicio());
-			esp.setFechaFin(b.getFechaFin());
-			esp.setCoordinador(coord);
-		}
-
-		// 3) Reconstruir la lista de números sobre la entidad gestionada.
-		// Pre-cargamos TODOS los artistas necesarios en UNA sola consulta ANTES de
-		// tocar la colección. Si la consulta se hace a mitad del bucle (como antes),
-		// JPA dispara un auto-flush con la colección a medio reconstruir e intenta
-		// insertar números nuevos antes de borrar los antiguos -> choca con la
-		// restricción única (id_espectaculo, orden).
+		// Pre-cargar todos los artistas necesarios en una sola consulta
 		Set<Long> idsArtistas = b.getNumeros().stream().flatMap(nb -> nb.getArtistas().stream()).map(Artista::getId)
 				.collect(Collectors.toSet());
 		Map<Long, Artista> artistasPorId = artistaRepository.findAllById(idsArtistas).stream()
 				.collect(Collectors.toMap(Artista::getId, a -> a));
 
-		// Para poder registrar un log por cada número creado o eliminado en este
-		// flujo, capturamos los números que YA existían (id -> nombre) y el conjunto
-		// de ids que llegan en el borrador. Un número del borrador sin id es nuevo;
-		// un id que existía y ya no viene en el borrador es una baja.
-		Map<Long, String> numerosAntes = new HashMap<>();
-		if (!esNuevo) {
-			for (Numero n : numeroRepository.findByEspectaculoIdOrderByOrdenAsc(esp.getId()))
-				numerosAntes.put(n.getId(), n.getNombre());
+		if (esNuevo) {
+			// ---------- ALTA DE ESPECTÁCULO ----------
+			esp = new Espectaculo(b.getNombre().trim(), b.getFechaInicio(), b.getFechaFin(), coord);
+			for (NumeroBorrador nb : b.getNumeros()) {
+				Numero n = new Numero(nb.getNombre().trim(), nb.getDuracion(), nb.getOrden(), esp);
+				n.setArtistas(resolverArtistas(nb, artistasPorId));
+				esp.getNumeros().add(n);
+			}
+			Espectaculo guardado = espectaculoRepository.save(esp);
+			espectaculoRepository.flush();
+
+			logService.registrarOperacion(login, TipoOperacion.NUEVO, "Nuevo Espectáculo [id=" + guardado.getId() + "] "
+					+ guardado.getNombre() + " con " + guardado.getNumeros().size() + " números");
+			for (Numero n : guardado.getNumeros()) {
+				logService.registrarOperacion(login, TipoOperacion.NUEVO, "Nuevo Número [id=" + n.getId() + "] "
+						+ n.getNombre() + " del Espectáculo [id=" + guardado.getId() + "]");
+			}
+			refrescarDossiersYInforme(guardado);
+			return guardado;
 		}
+
+		// ---------- MODIFICACIÓN DE ESPECTÁCULO ----------
+		esp = espectaculoRepository.findById(b.getId())
+				.orElseThrow(() -> new IllegalArgumentException("Espectáculo no encontrado."));
+
+		// ¿Cambió algún dato propio del espectáculo?
+		boolean cambioEspectaculo = !esp.getNombre().equals(b.getNombre().trim())
+				|| !Objects.equals(esp.getFechaInicio(), b.getFechaInicio())
+				|| !Objects.equals(esp.getFechaFin(), b.getFechaFin()) || esp.getCoordinador() == null
+				|| !Objects.equals(esp.getCoordinador().getId(), coord.getId());
+
+		esp.setNombre(b.getNombre().trim());
+		esp.setFechaInicio(b.getFechaInicio());
+		esp.setFechaFin(b.getFechaFin());
+		esp.setCoordinador(coord);
+
+		// Mapa de los números que YA existían en BD (por id)
+		Map<Long, Numero> existentesPorId = esp.getNumeros().stream().collect(Collectors.toMap(Numero::getId, n -> n));
+
+		// Ids de los números que el borrador conserva (los que tienen id no-nulo)
 		Set<Long> idsEnBorrador = b.getNumeros().stream().map(NumeroBorrador::getId).filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 
-		esp.getNumeros().clear();
-		if (!esNuevo) {
-			// Forzamos el BORRADO de los números antiguos antes de insertar los nuevos,
-			// para no violar la restricción única (id_espectaculo, orden).
+		// 3a) BORRADOS: números que estaban y ya no están en el borrador
+		List<Numero> aBorrar = esp.getNumeros().stream().filter(n -> !idsEnBorrador.contains(n.getId()))
+				.collect(Collectors.toList());
+		List<String> logsBorrado = new ArrayList<>();
+		for (Numero n : aBorrar) {
+			logsBorrado.add("Borrado Número [id=" + n.getId() + "] " + n.getNombre() + " del Espectáculo [id="
+					+ esp.getId() + "]");
+		}
+		esp.getNumeros().removeAll(aBorrar); // orphanRemoval los elimina de la BD
+		if (!aBorrar.isEmpty()) {
+			// Forzar el DELETE de los números borrados ANTES de insertar/actualizar los
+			// demás, para no chocar con la restricción única (id_espectaculo, orden) si
+			// algún número nuevo reutiliza un orden que quedó libre.
 			espectaculoRepository.flush();
 		}
+
+		// 3b) ALTAS y MODIFICACIONES
+		List<String> logsAlta = new ArrayList<>();
+		List<String> logsModif = new ArrayList<>();
 		for (NumeroBorrador nb : b.getNumeros()) {
-			Numero n = new Numero(nb.getNombre().trim(), nb.getDuracion(), nb.getOrden(), esp);
-			Set<Artista> arts = nb.getArtistas().stream().map(a -> artistasPorId.get(a.getId()))
-					.filter(Objects::nonNull).collect(Collectors.toCollection(HashSet::new));
-			n.setArtistas(arts);
-			esp.getNumeros().add(n);
+			Set<Artista> arts = resolverArtistas(nb, artistasPorId);
+			if (nb.getId() == null || !existentesPorId.containsKey(nb.getId())) {
+				// Número nuevo dentro de un espectáculo existente
+				Numero n = new Numero(nb.getNombre().trim(), nb.getDuracion(), nb.getOrden(), esp);
+				n.setArtistas(arts);
+				esp.getNumeros().add(n);
+				logsAlta.add(nb.getNombre().trim()); // el id se conoce tras el flush
+			} else {
+				// Número existente: actualizar in situ (conserva su id)
+				Numero n = existentesPorId.get(nb.getId());
+				boolean cambioNumero = !n.getNombre().equals(nb.getNombre().trim())
+						|| n.getDuracion() != nb.getDuracion() || n.getOrden() != nb.getOrden()
+						|| !mismosArtistas(n.getArtistas(), arts);
+				n.setNombre(nb.getNombre().trim());
+				n.setDuracion(nb.getDuracion());
+				n.setOrden(nb.getOrden());
+				n.setArtistas(arts);
+				if (cambioNumero)
+					logsModif.add("Modificación de Número [id=" + n.getId() + "] " + n.getNombre()
+							+ " del Espectáculo [id=" + esp.getId() + "]");
+			}
 		}
 
 		Espectaculo guardado = espectaculoRepository.save(esp);
+		espectaculoRepository.flush();
 
-		// 4) Logs DB4O: del espectáculo y de cada número creado/eliminado
-		if (esNuevo) {
-			logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.NUEVO,
-					"Nuevo Espectáculo [id=" + guardado.getId() + "] " + guardado.getNombre());
-		} else {
-			logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
+		// 4) Registrar logs DB4O reflejando EXACTAMENTE lo que ha cambiado
+		if (cambioEspectaculo) {
+			logService.registrarOperacion(login, TipoOperacion.ACTUALIZACION,
 					"Modificación de Espectáculo [id=" + guardado.getId() + "] " + guardado.getNombre());
 		}
-
-		// El orden es único por espectáculo: lo usamos para recuperar el id real con
-		// el que se ha persistido cada número ya guardado.
-		Map<Integer, Long> idPorOrden = new HashMap<>();
-		for (Numero n : guardado.getNumeros())
-			idPorOrden.put(n.getOrden(), n.getId());
-
-		// Log NUEVO por cada número recién creado (los del borrador sin id previo).
-		for (NumeroBorrador nb : b.getNumeros()) {
-			if (nb.getId() == null) {
-				Long idNum = idPorOrden.get(nb.getOrden());
-				logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.NUEVO, "Nuevo Número [id="
-						+ idNum + "] " + nb.getNombre().trim() + " (espectáculo " + guardado.getNombre() + ")");
-			}
-		}
-
-		// Log BORRADO por cada número que existía y ya no está en el borrador.
-		for (Map.Entry<Long, String> ant : numerosAntes.entrySet()) {
-			if (!idsEnBorrador.contains(ant.getKey())) {
-				logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.BORRADO,
-						"Borrado Número [id=" + ant.getKey() + "] " + ant.getValue() + " (espectáculo "
-								+ guardado.getNombre() + ")");
-			}
-		}
-
-		// 5) Actualizar dossiers MongoDB de los artistas participantes
+		// Altas (ahora sí con id asignado): localizamos los números nuevos por
+		// nombre+orden
 		for (Numero n : guardado.getNumeros()) {
-			for (Artista artista : n.getArtistas()) {
-				dossierService.agregarOActualizarTrayectoria(artista.getId(), n);
+			for (String nombreNuevo : logsAlta) {
+				if (n.getNombre().equals(nombreNuevo)) {
+					logService.registrarOperacion(login, TipoOperacion.NUEVO, "Nuevo Número [id=" + n.getId() + "] "
+							+ n.getNombre() + " del Espectáculo [id=" + guardado.getId() + "]");
+					break;
+				}
 			}
 		}
+		for (String l : logsModif)
+			logService.registrarOperacion(login, TipoOperacion.ACTUALIZACION, l);
+		for (String l : logsBorrado)
+			logService.registrarOperacion(login, TipoOperacion.BORRADO, l);
 
-		// 6) Si ya existía un informe XML de este espectáculo, regenerarlo
-		informeXmlService.regenerarSiExiste(guardado);
-
+		refrescarDossiersYInforme(guardado);
 		return guardado;
+	}
+
+	/** Resuelve los artistas de un número borrador a entidades gestionadas. */
+	private Set<Artista> resolverArtistas(NumeroBorrador nb, Map<Long, Artista> artistasPorId) {
+		return nb.getArtistas().stream().map(a -> artistasPorId.get(a.getId())).filter(Objects::nonNull)
+				.collect(Collectors.toCollection(HashSet::new));
+	}
+
+	/** Compara dos conjuntos de artistas por sus ids. */
+	private boolean mismosArtistas(Set<Artista> a, Set<Artista> b) {
+		Set<Long> ia = a.stream().map(Artista::getId).collect(Collectors.toSet());
+		Set<Long> ib = b.stream().map(Artista::getId).collect(Collectors.toSet());
+		return ia.equals(ib);
+	}
+
+	/**
+	 * Tras guardar, reconstruye las trayectorias de TODOS los artistas que ahora
+	 * participan en el espectáculo (estado real) y regenera el informe XML si
+	 * existía.
+	 */
+	private void refrescarDossiersYInforme(Espectaculo guardado) {
+		Set<Long> artistasAfectados = guardado.getNumeros().stream().flatMap(n -> n.getArtistas().stream())
+				.map(Artista::getId).collect(Collectors.toSet());
+		for (Long idArt : artistasAfectados) {
+			artistaRepository.findByIdConNumeros(idArt)
+					.ifPresent(art -> dossierService.reemplazarTrayectoria(idArt, new ArrayList<>(art.getNumeros())));
+		}
+		informeXmlService.regenerarSiExiste(guardado);
 	}
 
 	/**
@@ -301,10 +360,12 @@ public class EspectaculoService {
 		Numero n = new Numero(nombre.trim(), duracion, orden, esp);
 		n.setArtistas(new HashSet<>(artistaRepository.findAllById(idsArtistas)));
 		Numero saved = numeroRepository.save(n);
+		numeroRepository.flush();
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.NUEVO,
 				"Nuevo Número [id=" + saved.getId() + "] " + saved.getNombre());
-		for (Artista artista : saved.getArtistas()) {
-			dossierService.agregarOActualizarTrayectoria(artista.getId(), saved);
+		for (Long idArt : idsArtistas) {
+			artistaRepository.findByIdConNumeros(idArt)
+					.ifPresent(art -> dossierService.reemplazarTrayectoria(idArt, new ArrayList<>(art.getNumeros())));
 		}
 		regenerarInformeXmlSiExiste(esp.getId());
 		return saved;
@@ -319,15 +380,26 @@ public class EspectaculoService {
 		if (n.getOrden() != orden)
 			validarOrden(n.getEspectaculo().getId(), orden, idNumero);
 
+		// Artistas que estaban antes (para refrescar su dossier aunque salgan del
+		// número)
+		Set<Long> artistasAntes = n.getArtistas().stream().map(Artista::getId).collect(Collectors.toSet());
+
 		n.setNombre(nombre.trim());
 		n.setDuracion(duracion);
 		n.setOrden(orden);
 		n.setArtistas(new HashSet<>(artistaRepository.findAllById(idsArtistas)));
 		Numero saved = numeroRepository.save(n);
+		numeroRepository.flush();
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
 				"Modificación de Número [id=" + saved.getId() + "] " + saved.getNombre());
-		for (Artista artista : saved.getArtistas()) {
-			dossierService.agregarOActualizarTrayectoria(artista.getId(), saved);
+
+		// Refrescar el dossier de todos los artistas implicados (los nuevos y los que
+		// se hayan quitado), volcando su trayectoria real actual.
+		Set<Long> afectados = new HashSet<>(artistasAntes);
+		afectados.addAll(idsArtistas);
+		for (Long idArt : afectados) {
+			artistaRepository.findByIdConNumeros(idArt)
+					.ifPresent(art -> dossierService.reemplazarTrayectoria(idArt, new ArrayList<>(art.getNumeros())));
 		}
 		regenerarInformeXmlSiExiste(saved.getEspectaculo().getId());
 		return saved;
@@ -343,7 +415,18 @@ public class EspectaculoService {
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.BORRADO,
 				"Borrado Número [id=" + n.getId() + "] " + n.getNombre());
 		Long idEspectaculo = n.getEspectaculo().getId();
+
+		// Artistas que participaban en el número, para refrescar su dossier tras
+		// borrarlo
+		Set<Long> artistasAfectados = n.getArtistas().stream().map(Artista::getId).collect(Collectors.toSet());
+
 		numeroRepository.delete(n);
+		numeroRepository.flush();
+
+		for (Long idArt : artistasAfectados) {
+			artistaRepository.findByIdConNumeros(idArt)
+					.ifPresent(art -> dossierService.reemplazarTrayectoria(idArt, new ArrayList<>(art.getNumeros())));
+		}
 		regenerarInformeXmlSiExiste(idEspectaculo);
 	}
 
@@ -394,11 +477,43 @@ public class EspectaculoService {
 	 * espectáculo con sus números y artistas para generar un informe completo. Es a
 	 * prueba de fallos: un eXistDB caído no bloquea la operación.
 	 */
+	/**
+	 * Regenera los informes XML de todos los espectáculos dirigidos por un
+	 * coordinador. Se llama cuando cambian datos del coordinador (nombre, email,
+	 * senior) que aparecen en el XML, para mantenerlo actualizado.
+	 */
+	@Transactional(readOnly = true)
+	public void regenerarInformesDeCoordinador(Long idCoordinador) {
+		if (idCoordinador == null)
+			return;
+		for (Long idEsp : espectaculoRepository.findIdsByCoordinador(idCoordinador)) {
+			regenerarInformeXmlSiExiste(idEsp);
+		}
+	}
+
+	/**
+	 * Regenera los informes XML de todos los espectáculos en los que participa un
+	 * artista. Se llama cuando cambian datos del artista (nombre, email,
+	 * nacionalidad, apodo, especialidades) que aparecen en el XML.
+	 */
+	@Transactional(readOnly = true)
+	public void regenerarInformesDeArtista(Long idArtista) {
+		if (idArtista == null)
+			return;
+		for (Long idEsp : espectaculoRepository.findIdsByArtistaParticipante(idArtista)) {
+			regenerarInformeXmlSiExiste(idEsp);
+		}
+	}
+
 	private void regenerarInformeXmlSiExiste(Long idEspectaculo) {
 		if (idEspectaculo == null || !informeXmlService.existeXml(idEspectaculo))
 			return;
+		// Cargamos el espectáculo y forzamos la inicialización de sus números y
+		// artistas SIN reemplazar la colección (un setNumeros() sobre una colección
+		// con orphanRemoval lanza "collection no longer referenced"). Basta con
+		// recorrer la relación para que Hibernate la cargue dentro de la transacción.
 		espectaculoRepository.findById(idEspectaculo).ifPresent(esp -> {
-			esp.setNumeros(numeroRepository.findByEspectaculoIdConArtistas(idEspectaculo));
+			esp.getNumeros().forEach(n -> n.getArtistas().size());
 			informeXmlService.regenerarSiExiste(esp);
 		});
 	}

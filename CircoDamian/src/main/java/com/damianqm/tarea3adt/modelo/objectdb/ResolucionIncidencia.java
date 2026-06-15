@@ -31,7 +31,7 @@ public class ResolucionIncidencia {
 		this.incidencia = incidencia;
 	}
 
-	//  Getters / Setters 
+	// Getters / Setters
 
 	public Long getId() {
 		return id;

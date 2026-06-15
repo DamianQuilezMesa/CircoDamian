@@ -134,9 +134,10 @@ public class ConsultarIncidenciasController implements Initializable {
 	private void cargarCacheEspectaculos() {
 		for (Espectaculo e : espectaculoService.findAll()) {
 			nombreEspectaculo.put(e.getId(), e.getNombre());
-			for (Numero n : espectaculoService.findNumerosPorEspectaculo(e.getId())) {
-				nombreNumero.put(n.getId(), n.getNombre());
-			}
+		}
+		// Todos los números (independiente del espectáculo) para resolver id -> nombre
+		for (Numero n : espectaculoService.findAllNumeros()) {
+			nombreNumero.put(n.getId(), n.getNombre());
 		}
 	}
 
@@ -161,14 +162,18 @@ public class ConsultarIncidenciasController implements Initializable {
 			}
 		});
 
-		// El filtro de número es INDEPENDIENTE del de espectáculo: se cargan todos
-		// los números del circo, mostrando su id en el desplegable.
+		// Los combos de espectáculo y número son INDEPENDIENTES: el de número
+		// muestra todos los números sin tener que elegir antes un espectáculo.
 		cbNumero.setItems(FXCollections.observableArrayList(espectaculoService.findAllNumeros()));
+
 		cbNumero.setPromptText("Todos");
 		cbNumero.setConverter(new StringConverter<Numero>() {
 			@Override
 			public String toString(Numero n) {
-				return n == null ? "" : "[" + n.getId() + "] " + n.getNombre();
+				if (n == null)
+					return "";
+				String esp = n.getEspectaculo() != null ? " (Esp. " + n.getEspectaculo().getId() + ")" : "";
+				return "[" + n.getId() + "] " + n.getNombre() + esp;
 			}
 
 			@Override

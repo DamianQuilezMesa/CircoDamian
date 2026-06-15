@@ -90,13 +90,10 @@ public class GestionEspectaculoController implements Initializable {
 	@FXML
 	private Label lblMensaje;
 
-	/** Borrador en memoria del espectáculo en construcción/edición. */
 	private EspectaculoBorrador borrador = new EspectaculoBorrador();
 
-	/** Número del borrador cargado en el subformulario (null = crear nuevo). */
 	private NumeroBorrador numeroEnEdicion = null;
 
-	/** Lista observable de números del borrador (mostrada en la tabla). */
 	private final ObservableList<NumeroBorrador> numerosObservable = FXCollections.observableArrayList();
 
 	@Autowired
@@ -130,7 +127,7 @@ public class GestionEspectaculoController implements Initializable {
 		});
 	}
 
-	// PASO 1: datos básicos
+	//  PASO 1: datos básicos
 
 	/**
 	 * Pasa al Paso 2 guardando los datos básicos en el borrador (sin persistir).
@@ -171,7 +168,7 @@ public class GestionEspectaculoController implements Initializable {
 		lblMensaje.setText("");
 	}
 
-	// PASO 2: números en memoria
+	// PASO 2: números en memoria 
 
 	/** Añade o actualiza un número EN EL BORRADOR (en memoria, sin tocar BD). */
 	@FXML
@@ -330,7 +327,7 @@ public class GestionEspectaculoController implements Initializable {
 		}
 	}
 
-	// Helpers UI
+	// Helpers UI 
 
 	private void configurarCombos() {
 		refrescarComboEspectaculos();

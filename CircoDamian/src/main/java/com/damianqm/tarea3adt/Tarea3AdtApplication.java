@@ -1,7 +1,6 @@
 package com.damianqm.tarea3adt;
 
 import com.damianqm.tarea3adt.config.StageManager;
-
 import com.damianqm.tarea3adt.view.FxmlView;
 import javafx.application.Application;
 import javafx.stage.Stage;

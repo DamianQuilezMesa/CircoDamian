@@ -34,6 +34,8 @@ public class PersonaService {
 	private LogService logService;
 	@Autowired
 	private DossierService dossierService;
+	@Autowired
+	private EspectaculoService espectaculoService;
 
 	@Transactional
 	public Artista registrarArtista(String nombre, String email, String nacionalidad, String apodo,
@@ -93,6 +95,11 @@ public class PersonaService {
 				"Modificación de Persona [id=" + saved.getId() + "] " + saved.getNombre());
 		dossierService.actualizarDatosPersonales(saved.getId(), saved.getNombre(), saved.getEmail(),
 				saved.getNacionalidad());
+		// Mantener actualizados los informes XML donde aparezcan estos datos:
+		// si es artista, los espectáculos donde participa; si es coordinador, los que
+		// dirige.
+		espectaculoService.regenerarInformesDeArtista(saved.getId());
+		espectaculoService.regenerarInformesDeCoordinador(saved.getId());
 		return saved;
 	}
 
@@ -114,6 +121,9 @@ public class PersonaService {
 				"Modificación de Artista [id=" + saved.getId() + "] " + saved.getNombre());
 		List<String> specs = saved.getEspecialidades().stream().map(Enum::name).collect(Collectors.toList());
 		dossierService.actualizarDatosArtista(saved.getId(), saved.getApodo(), specs);
+		// El apodo y las especialidades aparecen en el XML de los espectáculos donde
+		// participa
+		espectaculoService.regenerarInformesDeArtista(saved.getId());
 		return saved;
 	}
 
@@ -133,6 +143,8 @@ public class PersonaService {
 		Coordinacion saved = coordinacionRepository.save(c);
 		logService.registrarOperacion(sesionService.getLoginActual(), TipoOperacion.ACTUALIZACION,
 				"Modificación de Coordinación [id=" + saved.getId() + "] " + saved.getNombre());
+		// El campo "senior" aparece en el XML de los espectáculos que dirige
+		espectaculoService.regenerarInformesDeCoordinador(saved.getId());
 		return saved;
 	}
 

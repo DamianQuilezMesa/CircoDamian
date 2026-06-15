@@ -1,0 +1,17 @@
+------------------------------------------------------------------------------------------------------------------------
+
+[2026-06-15 15:34:05 #1 server] 
+Server on port 6136 has started by 20868@A307PC10
+
+[2026-06-15 15:42:07 #2 store] 
+Database 'C:\Users\2damv19\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\db\circo_incidencias.odb' is opened by 20868@A307PC10
+
+[2026-06-15 15:42:07 #3 store] 
+Configuration path: C:\Users\2damv19\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\objectdb.conf
+
+[2026-06-15 15:49:34 #4 store] 
+Database 'C:\Users\2damv19\git\CircoDamian\CircoDamian\lib\objectdb-2.9.5\db\circo_incidencias.odb' is closed by 20868@A307PC10
+
+[2026-06-15 17:54:40 #5 server] 
+Server on port 6136 has stopped by 20868@A307PC10
+

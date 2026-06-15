@@ -16,4 +16,16 @@ public interface EspectaculoRepository extends JpaRepository<Espectaculo, Long> 
 
 	@Query("SELECT e FROM Espectaculo e ORDER BY e.id ASC")
 	List<Espectaculo> findAllOrdenados();
+
+	/** Ids de los espectáculos dirigidos por un coordinador concreto. */
+	@Query("SELECT e.id FROM Espectaculo e WHERE e.coordinador.id = :idCoord")
+	List<Long> findIdsByCoordinador(@org.springframework.data.repository.query.Param("idCoord") Long idCoord);
+
+	/**
+	 * Ids de los espectáculos en los que participa un artista (en alguno de sus
+	 * números).
+	 */
+	@Query("SELECT DISTINCT n.espectaculo.id FROM Numero n JOIN n.artistas a WHERE a.id = :idArtista")
+	List<Long> findIdsByArtistaParticipante(
+			@org.springframework.data.repository.query.Param("idArtista") Long idArtista);
 }

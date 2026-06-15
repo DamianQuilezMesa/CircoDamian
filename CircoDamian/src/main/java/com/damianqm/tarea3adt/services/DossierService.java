@@ -96,6 +96,34 @@ public class DossierService {
 		dossierRepository.save(d);
 	}
 
+	/**
+	 * Reemplaza por completo la trayectoria del dossier de un artista con la lista
+	 * de números recibida (sus participaciones reales actuales). Es la forma fiable
+	 * de mantener el dossier sincronizado cuando un espectáculo se reconstruye: al
+	 * recrear los números cambian sus ids, así que parchear entrada a entrada
+	 * dejaría datos huérfanos. Aquí se vuelca el estado real de una vez.
+	 */
+	public void reemplazarTrayectoria(Long idArtista, List<Numero> numerosDelArtista) {
+		Optional<Dossier> opt = dossierRepository.findByIdArtista(idArtista);
+		if (opt.isEmpty())
+			return;
+
+		Dossier d = opt.get();
+		List<EntradaTrayectoria> nueva = new ArrayList<>();
+		for (Numero n : numerosDelArtista) {
+			nueva.add(new EntradaTrayectoria(n.getEspectaculo().getId(), n.getEspectaculo().getNombre(), n.getId(),
+					n.getNombre(), n.getOrden(), n.getDuracion()));
+		}
+		// Ordenar por espectáculo y luego por orden del número, igual que la ficha
+		// (CU6)
+		nueva.sort((a, b) -> {
+			int cmp = Long.compare(a.getIdEspectaculo(), b.getIdEspectaculo());
+			return cmp != 0 ? cmp : Integer.compare(a.getOrden(), b.getOrden());
+		});
+		d.setTrayectoria(nueva);
+		dossierRepository.save(d);
+	}
+
 	// CU12: añade una evaluación al dossier del artista usando $push (actualización
 	// parcial).
 	// La evaluación queda sellada con quién la realiza (idPersona + rol), tal como

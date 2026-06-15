@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <informe>
-   <fechahora>21-05-2026 00:27:16</fechahora>
+   <fechahora>15-06-2026 15:40:55</fechahora>
    <espectaculo>
       <id>2</id>
       <nombre>El Gran Finale</nombre>
       <fechaini>15-09-2025</fechaini>
       <fechafin>15-12-2025</fechafin>
       <coordinacion>
-         <nombre>Laura Mendez</nombre>
+         <nombre>Laura Menendez</nombre>
          <email>laura.mendez@circo.com</email>
          <senior>true</senior>
       </coordinacion>
@@ -25,7 +25,7 @@
                   <apodo>Kenjiro</apodo>
                </artista>
                <artista>
-                  <nombre>Marco Rossi</nombre>
+                  <nombre>Marco Rossini</nombre>
                   <nacionalidad>IT</nacionalidad>
                   <email>marco.rossi@circo.com</email>
                   <especialidades>ACROBACIA,EQUILIBRISMO</especialidades>
@@ -39,44 +39,24 @@
             <duracion>9.0</duracion>
             <artistas>
                <artista>
-                  <nombre>Ivan Petrov</nombre>
-                  <nacionalidad>RU</nacionalidad>
-                  <email>ivan.petrov@circo.com</email>
-                  <especialidades>ACROBACIA,MALABARISMO</especialidades>
-               </artista>
-               <artista>
                   <nombre>Elena Varga</nombre>
                   <nacionalidad>HU</nacionalidad>
                   <email>elena.varga@circo.com</email>
                   <especialidades>MALABARISMO</especialidades>
                </artista>
-            </artistas>
-         </numero>
-         <numero>
-            <orden>3</orden>
-            <nombre>Fuego y Fantasia</nombre>
-            <duracion>20.0</duracion>
-            <artistas>
                <artista>
                   <nombre>Ivan Petrov</nombre>
                   <nacionalidad>RU</nacionalidad>
                   <email>ivan.petrov@circo.com</email>
                   <especialidades>ACROBACIA,MALABARISMO</especialidades>
                </artista>
-               <artista>
-                  <nombre>Marco Rossi</nombre>
-                  <nacionalidad>IT</nacionalidad>
-                  <email>marco.rossi@circo.com</email>
-                  <especialidades>ACROBACIA,EQUILIBRISMO</especialidades>
-                  <apodo>El Gran Marco</apodo>
-               </artista>
-               <artista>
-                  <nombre>Luis Torres</nombre>
-                  <nacionalidad>MO</nacionalidad>
-                  <email>luis.torres@circo.com</email>
-                  <especialidades>MAGIA</especialidades>
-                  <apodo>El Mago Torres</apodo>
-               </artista>
+            </artistas>
+         </numero>
+         <numero>
+            <orden>3</orden>
+            <nombre>Prueba tercer espectaculos</nombre>
+            <duracion>2.0</duracion>
+            <artistas>
                <artista>
                   <nombre>Sofia Dupont</nombre>
                   <nacionalidad>FR</nacionalidad>
